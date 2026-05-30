@@ -1,0 +1,2556 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Roma Electricistas — App</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+/* ===== RESET ===== */
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{background:#f0f0f0;font-family:'Inter',sans-serif;color:#111;font-size:15px;}
+
+/* ===== PANTALLAS ===== */
+#screen-editor{display:block;}
+#screen-preview{display:none;}
+#screen-mo{display:none;min-height:100vh;background:#f0f0f0;}
+#screen-mt{display:none;min-height:100vh;background:#f0f0f0;}
+#mt-preview{display:none;background:#e8e8e8;min-height:100vh;}
+
+/* ===== APP BAR ===== */
+.app-bar{
+  background:#111;padding:14px 16px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;
+  box-shadow:0 2px 8px rgba(0,0,0,.15);
+}
+.app-bar-title{
+  font-size:18px;font-weight:800;color:#fff;
+  display:flex;align-items:center;gap:10px;letter-spacing:.5px;
+}
+.app-bar-title span{font-size:20px;}
+.saved-badge{
+  font-size:10px;background:rgba(255,255,255,.15);border-radius:20px;
+  padding:3px 9px;color:rgba(255,255,255,.6);font-weight:500;
+}
+.app-bar-btn{
+  background:#fff;border:none;border-radius:8px;color:#111;
+  font-size:12px;font-weight:700;letter-spacing:.5px;
+  padding:8px 13px;cursor:pointer;white-space:nowrap;
+}
+.app-bar-btn.gold{background:#111;color:#fff;border:2px solid #fff;}
+
+/* ===== NAV BAR INFERIOR ===== */
+.nav-bar{
+  position:fixed;bottom:0;left:0;right:0;z-index:150;
+  background:#fff;border-top:1px solid #e8e8e8;
+  display:flex;align-items:stretch;
+  box-shadow:0 -2px 12px rgba(0,0,0,.08);
+}
+.nav-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:9px 4px 10px;cursor:pointer;border:none;background:none;
+  color:#aaa;font-family:'Inter',sans-serif;gap:4px;
+  border-top:2px solid transparent;transition:all .15s;
+}
+.nav-item.active{color:#111;border-top-color:#111;}
+.nav-item:active{background:#f5f5f5;}
+.nav-icon{font-size:20px;line-height:1;}
+.nav-label{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;}
+
+/* ===== SECCIONES ===== */
+.sections{padding:12px;padding-bottom:110px;}
+
+/* ===== CARDS ===== */
+.card{
+  background:#fff;border-radius:14px;margin-bottom:10px;
+  overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08);
+}
+.card-head{
+  padding:15px 16px;display:flex;align-items:center;
+  justify-content:space-between;cursor:pointer;
+}
+.card-head-left{display:flex;align-items:center;gap:12px;}
+.card-icon{
+  width:36px;height:36px;background:#111;border-radius:9px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;flex-shrink:0;
+}
+.card-title{font-size:15px;font-weight:700;color:#111;letter-spacing:.2px;}
+.card-arrow{color:#aaa;font-size:14px;transition:transform .2s;}
+.card-arrow.open{transform:rotate(180deg);}
+.card-body{padding:0 16px 16px;display:none;border-top:1px solid #f0f0f0;}
+.card-body.open{display:block;}
+
+/* ===== FORM ===== */
+.fg{margin-bottom:13px;margin-top:13px;}
+.fg:last-child{margin-bottom:0;}
+.fg label{
+  display:block;font-size:11px;font-weight:700;color:#666;
+  text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;
+}
+.fg input,.fg textarea,.fg select{
+  width:100%;background:#f7f7f7;border:1.5px solid #e0e0e0;border-radius:10px;
+  color:#111;font-family:'Inter',sans-serif;font-size:15px;
+  padding:11px 13px;outline:none;-webkit-appearance:none;
+  transition:border-color .15s;
+}
+.fg input:focus,.fg textarea:focus,.fg select:focus{border-color:#111;background:#fff;}
+.fg textarea{resize:none;line-height:1.5;}
+.fg input[readonly]{color:#999;cursor:not-allowed;background:#f0f0f0;}
+.fg-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
+/* ===== LOGO UPLOAD ===== */
+.logo-upload{
+  border:2px dashed #ddd;border-radius:12px;padding:20px;
+  text-align:center;cursor:pointer;background:#fafafa;margin-bottom:10px;
+  transition:border-color .15s;
+}
+.logo-upload:active{border-color:#111;}
+.logo-upload p{font-size:12px;color:#999;margin-top:8px;line-height:1.5;}
+#logo-preview-img{max-width:100%;max-height:70px;display:none;margin:0 auto;}
+#logo-file-input{display:none;}
+
+/* ===== WORK ITEMS ===== */
+.wi-item{display:flex;gap:8px;margin-bottom:8px;align-items:center;}
+.wi-item input{flex:1;}
+.btn-del{
+  background:#f5f5f5;border:1.5px solid #e0e0e0;border-radius:9px;
+  color:#999;padding:10px 13px;font-size:14px;cursor:pointer;flex-shrink:0;
+}
+.btn-del:active{background:#fee;border-color:#ccc;color:#c00;}
+.btn-add-item{
+  width:100%;border:1.5px dashed #ddd;border-radius:10px;background:none;
+  color:#aaa;padding:11px;font-size:13px;cursor:pointer;margin-top:6px;
+  font-family:'Inter',sans-serif;font-weight:600;letter-spacing:.5px;
+}
+.btn-add-item:active{border-color:#111;color:#111;}
+
+/* ===== TOGGLE ===== */
+.toggle-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 0;border-bottom:1px solid #f0f0f0;
+}
+.toggle-row:last-child{border-bottom:none;}
+.toggle-label{font-size:14px;font-weight:600;color:#111;flex:1;padding-right:12px;line-height:1.3;}
+.toggle-label small{display:block;font-size:12px;color:#999;font-weight:400;margin-top:2px;}
+.toggle{position:relative;width:46px;height:26px;flex-shrink:0;}
+.toggle input{opacity:0;width:0;height:0;}
+.toggle-slider{position:absolute;inset:0;background:#ddd;border-radius:13px;cursor:pointer;transition:.2s;}
+.toggle-slider:before{content:'';position:absolute;width:20px;height:20px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
+.toggle input:checked+.toggle-slider{background:#111;}
+.toggle input:checked+.toggle-slider:before{transform:translateX(20px);}
+
+/* ===== BOTTOM BAR ===== */
+.bottom-bar{
+  position:sticky;bottom:0;background:#fff;
+  border-top:1px solid #e8e8e8;padding:12px 14px;
+  display:flex;gap:10px;box-shadow:0 -2px 10px rgba(0,0,0,.06);
+}
+.btn-preview{
+  flex:1;background:#111;border:none;border-radius:12px;color:#fff;
+  font-size:16px;font-weight:800;letter-spacing:.5px;
+  padding:14px;cursor:pointer;
+}
+.btn-pdf{
+  background:#f5f5f5;border:1.5px solid #e0e0e0;border-radius:12px;
+  color:#555;font-size:13px;font-weight:700;
+  padding:14px 16px;cursor:pointer;
+}
+
+/* ===== PREVIEW BAR ===== */
+#screen-preview{background:#f0f0f0;min-height:100vh;}
+.preview-bar{
+  background:#111;padding:12px 14px;display:flex;align-items:center;
+  justify-content:space-between;position:sticky;top:0;z-index:100;
+}
+.preview-bar-title{font-size:16px;font-weight:800;color:#fff;}
+.btn-back{
+  background:rgba(255,255,255,.15);border:none;border-radius:8px;
+  color:#fff;font-size:13px;font-weight:700;padding:8px 13px;cursor:pointer;
+}
+.btn-print{
+  background:#fff;border:none;border-radius:8px;color:#111;
+  font-size:13px;font-weight:800;padding:8px 13px;cursor:pointer;
+}
+
+/* ===== PRESUPUESTO (documento) ===== */
+#presupuesto{
+  margin:14px;border-radius:12px;overflow:hidden;
+  box-shadow:0 4px 20px rgba(0,0,0,.12);background:#fff;
+}
+.p-header{
+  padding:22px 20px 18px;display:flex;justify-content:space-between;
+  align-items:flex-start;background:#111;
+}
+.p-bolt{
+  width:40px;height:40px;margin-bottom:8px;
+  background:#fff;
+  clip-path:polygon(50% 0%,80% 0%,40% 45%,70% 45%,20% 100%,50% 55%,25% 55%);
+}
+#p-logo-img{max-height:60px;max-width:130px;display:none;margin-bottom:8px;}
+.p-empresa{font-size:24px;font-weight:800;color:#fff;line-height:1;letter-spacing:.5px;}
+.p-rubro{font-size:10px;letter-spacing:3px;text-transform:uppercase;font-weight:600;margin-top:3px;color:rgba(255,255,255,.5);}
+.p-titulo{font-size:28px;font-weight:800;color:#fff;line-height:1;text-align:right;letter-spacing:1px;}
+.p-meta{font-size:10px;color:rgba(255,255,255,.45);margin-top:8px;line-height:2;text-align:right;font-family:'Share Tech Mono',monospace;}
+.p-meta b{color:rgba(255,255,255,.8);margin-left:4px;}
+.p-stripe{height:3px;background:#111;}
+.p-client{
+  padding:16px 20px;display:grid;grid-template-columns:1fr 1fr;
+  gap:14px;border-bottom:1px solid #f0f0f0;background:#fff;
+}
+.p-fl{font-size:9px;letter-spacing:2px;text-transform:uppercase;font-weight:700;color:#aaa;margin-bottom:3px;}
+.p-fv{font-size:13px;font-weight:600;color:#111;line-height:1.5;}
+.p-sec{padding:16px 20px;border-bottom:1px solid #f0f0f0;background:#fff;}
+.p-sec-title{
+  font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;
+  color:#111;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid #111;
+}
+.p-wi{
+  display:flex;align-items:center;gap:10px;padding:10px 12px;
+  margin-bottom:5px;border-radius:8px;font-size:13px;font-weight:500;
+  background:#f7f7f7;color:#111;border-left:3px solid #111;
+}
+.p-wn{font-size:10px;font-weight:800;min-width:20px;color:#111;font-family:'Share Tech Mono',monospace;}
+.p-total-box{margin:16px 20px;border-radius:12px;overflow:hidden;border:2px solid #111;}
+.p-total-hdr{padding:10px 18px;background:#111;}
+.p-total-hdr-txt{font-size:12px;font-weight:800;letter-spacing:3px;color:#fff;text-transform:uppercase;}
+.p-total-body{padding:16px 18px 20px;text-align:center;background:#fff;}
+.p-total-lbl{font-size:11px;font-weight:700;letter-spacing:4px;color:#aaa;margin-bottom:6px;text-transform:uppercase;}
+.p-total-amt{font-size:52px;font-weight:800;color:#111;line-height:1;letter-spacing:-1px;}
+.p-total-cur{font-size:10px;letter-spacing:2px;margin-top:5px;color:#aaa;text-transform:uppercase;}
+.p-inc-row{display:flex;gap:7px;margin-top:14px;justify-content:center;flex-wrap:wrap;}
+.p-inc{
+  padding:6px 13px;border-radius:20px;font-size:11px;font-weight:700;
+  background:#f0f0f0;border:1.5px solid #ddd;color:#333;
+}
+.p-inc::before{content:'✔  ';}
+/* desglose */
+.p-desglose{margin:0 20px 0;display:flex;flex-direction:column;gap:6px;}
+.p-desglose-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:10px 14px;border-radius:8px;background:#f7f7f7;
+}
+.p-desglose-label{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#666;}
+.p-desglose-val{font-size:20px;font-weight:800;color:#111;}
+.p-desglose-divider{height:1px;background:#e8e8e8;margin:4px 20px;}
+.p-desglose-total-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:11px 14px;border-radius:10px;border:2px solid #111;
+  margin:0 20px 16px;
+}
+.p-desglose-total-label{font-size:13px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#111;}
+.p-desglose-total-val{font-size:26px;font-weight:800;color:#111;}
+.p-feat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.p-feat{padding:12px;border-radius:10px;background:#f7f7f7;border-top:2px solid #111;}
+.p-feat-n{font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#111;margin-bottom:3px;}
+.p-feat-d{font-size:11px;line-height:1.4;color:#666;}
+.p-pay-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+.p-pay{
+  padding:6px 13px;border-radius:20px;font-size:11px;font-weight:700;
+  background:#f0f0f0;border:1.5px solid #ddd;color:#333;
+}
+.p-pay.hl{background:#111;color:#fff;border-color:#111;}
+.p-sig{
+  padding:16px 20px 22px;display:grid;grid-template-columns:1fr 1fr;
+  gap:22px;border-bottom:2px solid #111;background:#fff;
+}
+.p-sig-line{border-bottom:2px solid #111;height:40px;display:flex;align-items:flex-end;padding-bottom:5px;margin-bottom:6px;}
+.p-sig-firma{font-size:20px;font-weight:800;color:#aaa;letter-spacing:1px;}
+.p-sig-n{font-size:13px;font-weight:700;color:#111;}
+.p-sig-s{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#aaa;margin-top:2px;}
+.p-validity{font-size:10px;text-align:right;color:#aaa;margin-top:10px;line-height:1.6;}
+.p-footer{
+  padding:14px 20px;display:flex;justify-content:space-between;
+  align-items:center;flex-wrap:wrap;gap:8px;background:#111;
+}
+.p-footer-brand{font-size:15px;font-weight:800;color:#fff;letter-spacing:1px;}
+.p-footer-info{font-size:10px;color:rgba(255,255,255,.45);text-align:right;line-height:1.8;font-family:'Share Tech Mono',monospace;}
+.p-footer-info a{color:rgba(255,255,255,.6);text-decoration:none;}
+
+/* ===== MANO DE OBRA ===== */
+.mo-bar{
+  background:#111;border-bottom:none;padding:14px 16px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;
+}
+.mo-bar-title{font-size:18px;font-weight:800;color:#fff;display:flex;align-items:center;gap:8px;}
+.mo-bar-back{
+  background:rgba(255,255,255,.15);border:none;border-radius:8px;
+  color:#fff;font-size:13px;font-weight:700;padding:7px 13px;cursor:pointer;
+}
+.mo-content{padding:12px;}
+.mo-search{display:flex;gap:8px;margin-bottom:12px;}
+.mo-search input{
+  flex:1;background:#fff;border:1.5px solid #e0e0e0;border-radius:10px;
+  color:#111;font-family:'Inter',sans-serif;font-size:15px;padding:11px 13px;outline:none;
+}
+.mo-search input:focus{border-color:#111;}
+.mo-filter{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;padding-bottom:4px;}
+.mo-filter::-webkit-scrollbar{display:none;}
+.mo-cat-btn{
+  flex-shrink:0;background:#fff;border:1.5px solid #ddd;border-radius:20px;
+  color:#888;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;
+  padding:7px 14px;cursor:pointer;white-space:nowrap;
+}
+.mo-cat-btn.active{background:#111;border-color:#111;color:#fff;}
+.mo-list{display:flex;flex-direction:column;gap:8px;}
+.mo-item{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.07);border-left:4px solid #111;}
+.mo-item-head{padding:13px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;}
+.mo-item-info{flex:1;}
+.mo-item-name{font-size:14px;font-weight:700;color:#111;}
+.mo-item-cat{font-size:10px;letter-spacing:1px;color:#aaa;text-transform:uppercase;font-weight:600;margin-top:2px;}
+.mo-item-price{font-size:20px;font-weight:800;color:#111;text-align:right;}
+.mo-item-price-lbl{font-size:9px;color:#aaa;text-align:right;letter-spacing:1px;}
+.mo-item-arrow{color:#ccc;font-size:14px;margin-left:10px;transition:transform .2s;flex-shrink:0;}
+.mo-item-arrow.open{transform:rotate(180deg);}
+.mo-item-body{display:none;border-top:1px solid #f0f0f0;padding:14px;}
+.mo-item-body.open{display:block;}
+.mo-edit-row{display:flex;gap:8px;margin-bottom:10px;align-items:flex-end;}
+.mo-edit-row .fg{flex:1;margin:0;}
+.mo-edit-row .fg:first-child{flex:2;}
+.mo-btn-update{
+  background:#111;border:none;border-radius:9px;color:#fff;
+  font-size:13px;font-weight:700;padding:11px 14px;cursor:pointer;flex-shrink:0;
+}
+.mo-history{margin-top:12px;}
+.mo-history-title{font-size:10px;letter-spacing:2px;color:#aaa;text-transform:uppercase;font-weight:700;margin-bottom:7px;}
+.mo-history-list{display:flex;flex-direction:column;gap:5px;}
+.mo-history-item{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:8px 11px;background:#f7f7f7;border-radius:7px;
+}
+.mo-history-date{font-size:11px;color:#aaa;font-family:'Share Tech Mono',monospace;}
+.mo-history-val{font-size:13px;font-weight:700;color:#111;}
+.mo-history-empty{font-size:12px;color:#ccc;text-align:center;padding:8px;}
+.mo-btn-del-item{
+  background:none;border:1.5px solid #e0e0e0;border-radius:7px;
+  color:#ccc;font-size:12px;padding:6px 11px;cursor:pointer;margin-top:8px;width:100%;
+}
+.mo-btn-del-item:active{border-color:#c00;color:#c00;}
+.mo-fab{
+  position:fixed;bottom:20px;right:16px;width:54px;height:54px;
+  background:#111;border:none;border-radius:50%;color:#fff;font-size:26px;
+  cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.2);
+  display:flex;align-items:center;justify-content:center;z-index:50;
+}
+.mo-empty{text-align:center;padding:40px 20px;color:#ccc;font-size:14px;}
+.mo-modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:flex-end;justify-content:center;}
+.mo-modal-bg.open{display:flex;}
+.mo-modal{
+  background:#fff;border-radius:20px 20px 0 0;padding:22px 18px 36px;
+  width:100%;max-width:480px;
+}
+.mo-modal-title{font-size:18px;font-weight:800;color:#111;margin-bottom:18px;}
+.mo-modal .fg{margin-bottom:12px;}
+.mo-modal .fg label{display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;}
+.mo-modal .fg input,.mo-modal .fg select{
+  width:100%;background:#f7f7f7;border:1.5px solid #e0e0e0;border-radius:10px;
+  color:#111;font-family:'Inter',sans-serif;font-size:15px;padding:11px 13px;outline:none;-webkit-appearance:none;
+}
+.mo-modal .fg input:focus{border-color:#111;}
+.mo-modal-btns{display:flex;gap:10px;margin-top:18px;}
+.mo-modal-ok{flex:1;background:#111;border:none;border-radius:12px;color:#fff;font-size:16px;font-weight:800;padding:13px;cursor:pointer;}
+.mo-modal-cancel{background:#f5f5f5;border:1.5px solid #e0e0e0;border-radius:12px;color:#888;font-size:14px;font-weight:700;padding:13px 16px;cursor:pointer;}
+
+/* ===== MEMORIA TÉCNICA (editor) ===== */
+.topbar{
+  background:#111;border-bottom:none;padding:13px 16px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:200;
+}
+.topbar-left{display:flex;align-items:center;gap:10px;}
+.topbar-badge{
+  background:rgba(255,255,255,.15);border-radius:6px;
+  padding:3px 9px;font-size:11px;font-weight:700;color:#fff;letter-spacing:1px;
+}
+.topbar-title{font-size:17px;font-weight:800;color:#fff;}
+.topbar-saved{font-size:10px;color:rgba(255,255,255,.4);letter-spacing:1px;font-family:'Share Tech Mono',monospace;}
+.topbar-btn{
+  background:#fff;border:none;border-radius:8px;color:#111;
+  font-size:12px;font-weight:800;letter-spacing:.5px;padding:8px 13px;cursor:pointer;
+}
+.topbar-back{
+  background:rgba(255,255,255,.15);border:none;border-radius:8px;
+  color:#fff;font-size:12px;font-weight:700;letter-spacing:.5px;padding:8px 13px;cursor:pointer;
+}
+.tabs-wrap{background:#fff;border-bottom:1px solid #e8e8e8;padding:0 14px;}
+.tabs{display:flex;overflow-x:auto;gap:0;}
+.tabs::-webkit-scrollbar{display:none;}
+.tab-btn{
+  flex-shrink:0;padding:12px 14px;font-size:12px;font-weight:700;
+  color:#aaa;cursor:pointer;border-bottom:2px solid transparent;
+  white-space:nowrap;background:none;border-top:none;border-left:none;border-right:none;
+  letter-spacing:.5px;text-transform:uppercase;
+}
+.tab-btn.active{color:#111;border-bottom-color:#111;}
+.ed-content{padding:12px;padding-bottom:100px;background:#f0f0f0;}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+.plantilla-banner{
+  background:#fff;border-radius:14px;padding:16px;margin-bottom:12px;
+  box-shadow:0 1px 4px rgba(0,0,0,.07);
+}
+.plantilla-title{font-size:11px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;}
+.plantilla-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.plantilla-btn{
+  background:#f7f7f7;border:1.5px solid #e8e8e8;border-radius:10px;
+  color:#555;font-size:11px;font-weight:700;padding:10px 4px;
+  cursor:pointer;text-align:center;line-height:1.4;
+}
+.plantilla-btn:active{background:#111;color:#fff;border-color:#111;}
+.plantilla-icon{font-size:18px;display:block;margin-bottom:4px;}
+.mt-card{
+  background:#fff;border-radius:14px;margin-bottom:10px;
+  overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.07);
+}
+.mt-card-head{padding:15px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;}
+.mt-card-left{display:flex;align-items:center;gap:12px;}
+.mt-card-num{
+  width:28px;height:28px;border-radius:50%;background:#111;
+  font-size:12px;font-weight:800;color:#fff;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.mt-card-title{font-size:15px;font-weight:700;color:#111;}
+.mt-card-sub{font-size:11px;color:#aaa;margin-top:1px;}
+.mt-card-arrow{color:#ccc;font-size:14px;transition:transform .2s;}
+.mt-card-arrow.open{transform:rotate(180deg);}
+.mt-card-body{display:none;padding:0 16px 16px;border-top:1px solid #f0f0f0;}
+.mt-card-body.open{display:block;}
+.mt-card-body .fg{margin-top:13px;}
+.sec-label{
+  font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;
+  letter-spacing:1.5px;margin:14px 0 10px;padding-bottom:6px;
+  border-bottom:1px solid #f0f0f0;
+}
+.mat-table-head{
+  display:grid;grid-template-columns:50px 1fr 80px 80px;gap:6px;
+  padding:8px 10px;background:#f7f7f7;border-radius:8px;margin-bottom:6px;
+}
+.mat-table-head span{font-size:9px;letter-spacing:2px;color:#aaa;text-transform:uppercase;font-weight:700;}
+.mat-row{display:grid;grid-template-columns:50px 1fr 80px 80px;gap:6px;margin-bottom:6px;align-items:center;}
+.mat-row input{
+  background:#f7f7f7;border:1.5px solid #e0e0e0;border-radius:8px;
+  color:#111;font-family:'Inter',sans-serif;font-size:13px;padding:8px 9px;outline:none;width:100%;
+}
+.mat-row input:focus{border-color:#111;}
+.mat-del{background:none;border:1.5px solid #e8e8e8;border-radius:7px;color:#ccc;padding:8px;cursor:pointer;font-size:12px;width:100%;}
+.btn-add-mat{
+  width:100%;border:1.5px dashed #ddd;border-radius:10px;background:none;
+  color:#aaa;padding:10px;font-size:13px;cursor:pointer;margin-top:4px;
+  font-family:'Inter',sans-serif;font-weight:600;
+}
+.aea-box{background:#f0f4ff;border:1px solid #c8d8f8;border-radius:10px;padding:13px 14px;margin-top:10px;}
+.aea-box p{font-size:12px;color:#3a5a9a;line-height:1.6;}
+.aea-title{font-size:10px;letter-spacing:1px;color:#5a7abf;font-weight:700;text-transform:uppercase;margin-bottom:5px;}
+.bottom-bar-mt{
+  position:fixed;bottom:0;left:0;right:0;background:#fff;
+  border-top:1px solid #e8e8e8;padding:11px 14px;
+  display:flex;gap:8px;box-shadow:0 -2px 10px rgba(0,0,0,.06);
+}
+.btn-generar{
+  flex:1;background:#111;border:none;border-radius:12px;color:#fff;
+  font-size:16px;font-weight:800;padding:13px;cursor:pointer;
+}
+.btn-pdf-bottom{
+  background:#f5f5f5;border:1.5px solid #e0e0e0;border-radius:12px;
+  color:#666;font-size:13px;font-weight:700;padding:13px 14px;cursor:pointer;
+}
+.prev-bar{
+  background:#111;padding:12px 14px;display:flex;align-items:center;
+  justify-content:space-between;position:sticky;top:0;z-index:100;
+  border-bottom:none;
+}
+.prev-bar-title{font-size:16px;font-weight:800;color:#fff;}
+.btn-prev-back{background:rgba(255,255,255,.15);border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:700;padding:8px 12px;cursor:pointer;}
+.btn-prev-pdf{background:#fff;border:none;border-radius:8px;color:#111;font-size:12px;font-weight:800;padding:8px 12px;cursor:pointer;}
+.saved-list-item{
+  background:#fff;border:1px solid #e8e8e8;border-radius:12px;
+  padding:13px 14px;margin-bottom:8px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.saved-item-name{font-size:14px;font-weight:700;color:#111;}
+.saved-item-date{font-size:11px;color:#aaa;font-family:'Share Tech Mono',monospace;margin-top:2px;}
+.saved-item-btns{display:flex;gap:6px;}
+.btn-load{background:#111;border:none;border-radius:7px;color:#fff;font-size:11px;font-weight:700;letter-spacing:.5px;padding:6px 11px;cursor:pointer;}
+.btn-del-saved{background:none;border:1.5px solid #e0e0e0;border-radius:7px;color:#ccc;font-size:11px;padding:6px 9px;cursor:pointer;}
+.saved-empty{text-align:center;padding:30px;color:#ccc;font-size:13px;}
+
+/* ===== DOCUMENTO MT (fondo blanco para imprimir) ===== */
+#doc-mt{
+  background:#fff;color:#111;
+  margin:14px;border-radius:10px;
+  box-shadow:0 4px 20px rgba(0,0,0,.1);
+  font-family:'Inter',sans-serif;overflow:hidden;
+}
+.doc-header{
+  background:#111;padding:22px 24px 18px;
+  display:flex;justify-content:space-between;align-items:flex-start;
+  border-bottom:none;
+}
+.doc-logo-area{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+.doc-bolt{width:34px;height:34px;background:#fff;clip-path:polygon(50% 0%,80% 0%,40% 45%,70% 45%,20% 100%,50% 55%,25% 55%);}
+#doc-logo-img{max-height:50px;max-width:120px;display:none;}
+.doc-empresa-name{font-size:24px;font-weight:800;color:#fff;line-height:1;letter-spacing:.5px;}
+.doc-empresa-rubro{font-size:10px;letter-spacing:3px;color:rgba(255,255,255,.4);text-transform:uppercase;font-weight:700;}
+.doc-empresa-info{font-size:11px;color:rgba(255,255,255,.45);margin-top:8px;line-height:1.9;font-family:'Share Tech Mono',monospace;}
+.doc-header-right{text-align:right;}
+.doc-tipo{font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(255,255,255,.4);text-transform:uppercase;}
+.doc-titulo{font-size:26px;font-weight:800;color:#fff;line-height:1.1;letter-spacing:.5px;}
+.doc-meta{font-family:'Share Tech Mono',monospace;font-size:10px;color:rgba(255,255,255,.35);margin-top:8px;line-height:2;}
+.doc-meta b{color:rgba(255,255,255,.65);margin-left:4px;}
+.doc-stripe{height:3px;background:#111;}
+.doc-sec{padding:18px 22px;border-bottom:1px solid #f0f0f0;}
+.doc-sec:last-child{border-bottom:none;}
+.doc-sec-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.doc-sec-num{width:26px;height:26px;background:#111;border-radius:50%;font-size:12px;font-weight:800;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.doc-sec-title{font-size:14px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#111;flex:1;}
+.doc-sec-line{flex:1;height:1px;background:#e8e8e8;}
+.doc-client-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.doc-field{background:#f7f7f7;border-radius:8px;padding:11px 13px;border-left:3px solid #111;}
+.doc-field-lbl{font-size:9px;letter-spacing:2px;color:#aaa;text-transform:uppercase;font-weight:700;margin-bottom:3px;}
+.doc-field-val{font-size:13px;font-weight:600;color:#111;line-height:1.4;}
+.doc-desc-box{background:#f7f7f7;border-radius:8px;padding:14px;border-left:3px solid #111;}
+.doc-desc-box p{font-size:13px;color:#333;line-height:1.7;}
+.doc-task-item{display:flex;align-items:center;gap:10px;padding:9px 12px;margin-bottom:5px;background:#f7f7f7;border-radius:7px;border-left:3px solid #111;}
+.doc-task-num{font-family:'Share Tech Mono',monospace;font-size:10px;color:#aaa;font-weight:700;min-width:20px;}
+.doc-task-txt{font-size:13px;font-weight:600;color:#111;}
+.doc-tech-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.doc-tech-item{background:#f7f7f7;border-radius:8px;padding:10px 12px;}
+.doc-tech-lbl{font-size:9px;letter-spacing:1px;color:#aaa;text-transform:uppercase;font-weight:700;margin-bottom:4px;}
+.doc-tech-val{font-size:13px;font-weight:700;color:#111;}
+.doc-tablero-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.doc-tablero-item{background:#f7f7f7;border-radius:8px;padding:10px 12px;text-align:center;}
+.doc-tablero-lbl{font-size:9px;letter-spacing:1px;color:#aaa;text-transform:uppercase;font-weight:700;margin-bottom:4px;}
+.doc-tablero-val{font-size:20px;font-weight:800;color:#111;}
+.doc-tablero-unit{font-size:10px;color:#aaa;}
+.doc-mat-table{width:100%;border-collapse:collapse;font-size:12px;}
+.doc-mat-table th{background:#111;color:#fff;padding:9px 11px;text-align:left;font-size:10px;letter-spacing:1px;text-transform:uppercase;font-weight:700;}
+.doc-mat-table td{padding:9px 11px;border-bottom:1px solid #f0f0f0;color:#333;}
+.doc-mat-table tr:nth-child(even) td{background:#f9f9f9;}
+.doc-mat-qty{font-family:'Share Tech Mono',monospace;font-weight:700;color:#111;}
+.doc-cond-item{display:flex;align-items:flex-start;gap:10px;margin-bottom:9px;}
+.doc-cond-dot{width:5px;height:5px;background:#111;border-radius:50%;margin-top:7px;flex-shrink:0;}
+.doc-cond-txt{font-size:13px;color:#333;line-height:1.6;}
+.doc-garantia-box{background:#f0fff4;border:1px solid #b8e6c8;border-radius:10px;padding:15px;border-left:3px solid #2a7a2a;}
+.doc-garantia-box p{font-size:13px;color:#1a4a1a;line-height:1.7;}
+.doc-aea-box{background:#f0f4ff;border:1px solid #c0d0f0;border-radius:10px;padding:13px;border-left:3px solid #3a5abf;margin-top:10px;}
+.doc-aea-box p{font-size:12px;color:#2a3a7a;line-height:1.6;}
+.doc-aea-title{font-size:10px;letter-spacing:1px;color:#4a6abf;font-weight:700;text-transform:uppercase;margin-bottom:5px;}
+.doc-firmas{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:6px;}
+.doc-firma-box{text-align:center;}
+.doc-firma-line{border-bottom:2px solid #111;height:50px;margin-bottom:8px;}
+.doc-firma-name{font-size:14px;font-weight:700;color:#111;}
+.doc-firma-sub{font-size:10px;color:#aaa;letter-spacing:1px;text-transform:uppercase;margin-top:2px;}
+.doc-footer{background:#111;padding:13px 22px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
+.doc-footer-brand{font-size:14px;font-weight:800;color:#fff;letter-spacing:1px;}
+.doc-footer-info{font-size:10px;color:rgba(255,255,255,.4);text-align:right;font-family:'Share Tech Mono',monospace;line-height:1.8;}
+
+
+/* ===== GARANTÍA ===== */
+#screen-gar{display:none;min-height:100vh;background:#f0f0f0;}
+.gar-bar{background:#111;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.gar-bar-title{font-size:18px;font-weight:800;color:#fff;display:flex;align-items:center;gap:8px;}
+.gar-bar-back{background:rgba(255,255,255,.15);border:none;border-radius:8px;color:#fff;font-size:13px;font-weight:700;padding:8px 13px;cursor:pointer;}
+.gar-content{padding:12px;padding-bottom:100px;}
+.gar-list{display:flex;flex-direction:column;gap:10px;}
+.gar-item{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08);border-left:4px solid #111;}
+.gar-item-head{padding:14px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;}
+.gar-item-left{flex:1;}
+.gar-item-titulo{font-size:15px;font-weight:700;color:#111;}
+.gar-item-meta{font-size:11px;color:#aaa;margin-top:3px;display:flex;gap:10px;flex-wrap:wrap;}
+.gar-item-estado{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:3px 9px;border-radius:20px;}
+.gar-est-vigente{background:#e8f5e9;color:#2a7a2a;}
+.gar-est-vencida{background:#fce8e8;color:#a00;}
+.gar-est-proxima{background:#fff8e1;color:#a06000;}
+.gar-item-arrow{color:#ccc;font-size:14px;margin-left:10px;transition:transform .2s;flex-shrink:0;}
+.gar-item-arrow.open{transform:rotate(180deg);}
+.gar-item-body{display:none;border-top:1px solid #f0f0f0;padding:16px;}
+.gar-item-body.open{display:block;}
+.gar-item-body .fg{margin-bottom:12px;}
+.gar-item-body .fg:last-child{margin-bottom:0;}
+.gar-item-body .fg label{display:block;font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;}
+.gar-item-body .fg input,.gar-item-body .fg textarea,.gar-item-body .fg select{
+  width:100%;background:#f7f7f7;border:1.5px solid #e0e0e0;border-radius:10px;
+  color:#111;font-family:'Inter',sans-serif;font-size:14px;padding:10px 12px;outline:none;-webkit-appearance:none;
+}
+.gar-item-body .fg input:focus,.gar-item-body .fg textarea:focus{border-color:#111;}
+.gar-item-body .fg textarea{resize:none;min-height:80px;line-height:1.5;}
+.gar-item-body .fg-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.gar-btn-guardar{width:100%;background:#111;border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:800;padding:12px;cursor:pointer;margin-top:12px;}
+.gar-btn-del{width:100%;background:none;border:1.5px solid #e0e0e0;border-radius:10px;color:#ccc;font-size:13px;font-weight:600;padding:10px;cursor:pointer;margin-top:6px;}
+.gar-btn-del:active{border-color:#c00;color:#c00;}
+.gar-empty{text-align:center;padding:40px 20px;color:#ccc;font-size:14px;}
+.gar-fab{position:fixed;bottom:20px;right:16px;width:54px;height:54px;background:#111;border:none;border-radius:50%;color:#fff;font-size:26px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;z-index:50;}
+.gar-doc-preview{background:#f7f7f7;border-radius:10px;padding:14px;margin-top:12px;border:1.5px solid #e0e0e0;}
+.gar-doc-title{font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}
+.gar-doc-body{font-size:13px;color:#333;line-height:1.7;}
+.gar-btn-pdf{width:100%;background:#f5f5f5;border:1.5px solid #e0e0e0;border-radius:10px;color:#555;font-size:13px;font-weight:700;padding:11px;cursor:pointer;margin-top:8px;}
+
+/* ===== TRABAJOS REALIZADOS ===== */
+#screen-tr{display:none;min-height:100vh;background:#f0f0f0;}
+.tr-bar{background:#111;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.tr-bar-title{font-size:18px;font-weight:800;color:#fff;display:flex;align-items:center;gap:8px;}
+.tr-bar-back{background:rgba(255,255,255,.15);border:none;border-radius:8px;color:#fff;font-size:13px;font-weight:700;padding:8px 13px;cursor:pointer;}
+.tr-content{padding:12px;padding-bottom:100px;}
+.tr-resumen{background:#111;border-radius:14px;padding:18px;margin-bottom:14px;display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.tr-res-item{text-align:center;}
+.tr-res-lbl{font-size:10px;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;}
+.tr-res-val{font-size:22px;font-weight:800;color:#fff;}
+.tr-res-val.verde{color:#6fcf6f;}
+.tr-res-val.rojo{color:#ff8080;}
+.tr-filter-row{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;padding-bottom:4px;}
+.tr-filter-row::-webkit-scrollbar{display:none;}
+.tr-filter-btn{flex-shrink:0;background:#fff;border:1.5px solid #ddd;border-radius:20px;color:#888;font-size:12px;font-weight:600;padding:7px 14px;cursor:pointer;white-space:nowrap;}
+.tr-filter-btn.active{background:#111;border-color:#111;color:#fff;}
+.tr-list{display:flex;flex-direction:column;gap:10px;}
+.tr-item{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08);}
+.tr-item-head{padding:14px 16px;display:flex;align-items:flex-start;justify-content:space-between;cursor:pointer;}
+.tr-item-left{flex:1;}
+.tr-item-cli{font-size:15px;font-weight:700;color:#111;}
+.tr-item-dir{font-size:12px;color:#aaa;margin-top:2px;}
+.tr-item-fecha{font-size:11px;color:#bbb;margin-top:3px;font-family:'Share Tech Mono',monospace;}
+.tr-item-right{text-align:right;flex-shrink:0;margin-left:10px;}
+.tr-item-total{font-size:17px;font-weight:800;color:#111;}
+.tr-item-estado{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:3px 9px;border-radius:20px;margin-top:4px;display:inline-block;}
+.tr-est-cobrado{background:#e8f5e9;color:#2a7a2a;}
+.tr-est-parcial{background:#fff8e1;color:#a06000;}
+.tr-est-pendiente{background:#fce8e8;color:#a00;}
+.tr-est-proceso{background:#e8f0ff;color:#1a4aaa;}
+.tr-item-arrow{color:#ccc;font-size:14px;margin-left:8px;transition:transform .2s;flex-shrink:0;margin-top:2px;}
+.tr-item-arrow.open{transform:rotate(180deg);}
+.tr-item-body{display:none;border-top:1px solid #f0f0f0;padding:16px;}
+.tr-item-body.open{display:block;}
+.tr-item-body .fg{margin-bottom:12px;}
+.tr-item-body .fg:last-child{margin-bottom:0;}
+.tr-item-body .fg label{display:block;font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;}
+.tr-item-body .fg input,.tr-item-body .fg textarea,.tr-item-body .fg select{
+  width:100%;background:#f7f7f7;border:1.5px solid #e0e0e0;border-radius:10px;
+  color:#111;font-family:'Inter',sans-serif;font-size:14px;padding:10px 12px;outline:none;-webkit-appearance:none;
+}
+.tr-item-body .fg input:focus,.tr-item-body .fg textarea:focus{border-color:#111;}
+.tr-item-body .fg-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.tr-item-body .fg textarea{resize:none;min-height:60px;line-height:1.5;}
+.tr-desglose{background:#f7f7f7;border-radius:10px;padding:12px;margin-bottom:12px;}
+.tr-desglose-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #efefef;font-size:13px;}
+.tr-desglose-row:last-child{border-bottom:none;font-weight:800;font-size:14px;}
+.tr-desglose-row span:last-child{font-weight:700;}
+.tr-btn-guardar{width:100%;background:#111;border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:800;padding:12px;cursor:pointer;margin-top:4px;}
+.tr-btn-del{width:100%;background:none;border:1.5px solid #e0e0e0;border-radius:10px;color:#ccc;font-size:13px;font-weight:600;padding:10px;cursor:pointer;margin-top:6px;}
+.tr-btn-del:active{border-color:#c00;color:#c00;}
+.tr-empty{text-align:center;padding:40px 20px;color:#ccc;font-size:14px;}
+.tr-fab{position:fixed;bottom:20px;right:16px;width:54px;height:54px;background:#111;border:none;border-radius:50%;color:#fff;font-size:26px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;z-index:50;}
+
+@media print{
+  #screen-editor{display:none!important;}
+  #screen-mo{display:none!important;}
+  #screen-mt{display:none!important;}
+  #screen-gar{display:none!important;}
+  .nav-bar{display:none!important;}
+  #screen-tr{display:none!important;}
+  #screen-preview,#mt-preview{display:block!important;}
+  .preview-bar,.prev-bar{display:none!important;}
+  #presupuesto,#doc-mt{margin:0;border-radius:0;box-shadow:none;}
+  body{background:#fff;}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV BAR GLOBAL -->
+<nav class="nav-bar" id="main-nav">
+  <button class="nav-item active" id="nav-pres" onclick="navGo('pres')">
+    <span class="nav-icon">📋</span>
+    <span class="nav-label">Presupuesto</span>
+  </button>
+  <button class="nav-item" id="nav-mo" onclick="navGo('mo')">
+    <span class="nav-icon">🔨</span>
+    <span class="nav-label">Mano obra</span>
+  </button>
+  <button class="nav-item" id="nav-mt" onclick="navGo('mt')">
+    <span class="nav-icon">📄</span>
+    <span class="nav-label">Mem. técnica</span>
+  </button>
+  <button class="nav-item" id="nav-gar" onclick="navGo('gar')">
+    <span class="nav-icon">🛡</span>
+    <span class="nav-label">Garantías</span>
+  </button>
+  <button class="nav-item" id="nav-tr" onclick="navGo('tr')">
+    <span class="nav-icon">📁</span>
+    <span class="nav-label">Trabajos</span>
+  </button>
+</nav>
+
+<!-- EDITOR -->
+<div id="screen-editor">
+  <div class="app-bar">
+    <div class="app-bar-title">⚡ ROMA <span class="saved-badge" id="save-badge">✓ GUARDADO</span></div>
+    <button class="app-bar-btn" onclick="mostrarPreview()">VER →</button>
+  </div>
+
+  <div class="sections">
+
+    <div class="card">
+      <div class="card-head" onclick="toggleCard(this)">
+        <div class="card-head-left"><span class="card-icon">🖼️</span><span class="card-title">LOGO</span></div>
+        <span class="card-arrow open">▼</span>
+      </div>
+      <div class="card-body open">
+        <div class="logo-upload" onclick="document.getElementById('logo-file-input').click()">
+          <img id="logo-preview-img" alt="Logo">
+          <p id="logo-hint">📁 Tocá para subir tu logo<br><small>PNG, JPG o SVG</small></p>
+        </div>
+        <input type="file" id="logo-file-input" accept="image/*">
+        <button class="btn-add-item" onclick="quitarLogo()">✕ Quitar logo</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head" onclick="toggleCard(this)">
+        <div class="card-head-left"><span class="card-icon">🏢</span><span class="card-title">EMPRESA</span></div>
+        <span class="card-arrow">▼</span>
+      </div>
+      <div class="card-body">
+        <div class="fg"><label>Nombre empresa</label><input id="f-emp" oninput="guardar('f-emp')"></div>
+        <div class="fg"><label>Rubro / subtítulo</label><input id="f-rub" oninput="guardar('f-rub')"></div>
+        <div class="fg"><label>Título del documento</label><input id="f-doctit" oninput="guardar('f-doctit')"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head" onclick="toggleCard(this)">
+        <div class="card-head-left"><span class="card-icon">📋</span><span class="card-title">PRESUPUESTO</span></div>
+        <span class="card-arrow">▼</span>
+      </div>
+      <div class="card-body">
+        <div class="fg"><label>Fecha</label><input id="f-fecha" oninput="guardar('f-fecha')"></div>
+        <div class="fg"><label>Número</label><input id="f-nro" oninput="guardar('f-nro')"></div>
+        <div class="fg"><label>Válido hasta</label><input id="f-valid" oninput="guardar('f-valid')"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head" onclick="toggleCard(this)">
+        <div class="card-head-left"><span class="card-icon">👤</span><span class="card-title">CLIENTE</span></div>
+        <span class="card-arrow">▼</span>
+      </div>
+      <div class="card-body">
+        <div class="fg"><label>Nombre</label><input id="f-cli" oninput="guardar('f-cli')"></div>
+        <div class="fg"><label>Dirección</label><textarea id="f-dir" oninput="guardar('f-dir')"></textarea></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head" onclick="toggleCard(this)">
+        <div class="card-head-left"><span class="card-icon">🔧</span><span class="card-title">TRABAJOS</span></div>
+        <span class="card-arrow">▼</span>
+      </div>
+      <div class="card-body">
+        <div id="work-editor"></div>
+        <button class="btn-add-item" onclick="addWork()">+ Agregar ítem</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head" onclick="toggleCard(this)">
+        <div class="card-head-left"><span class="card-icon">💰</span><span class="card-title">PRECIO</span></div>
+        <span class="card-arrow">▼</span>
+      </div>
+      <div class="card-body">
+        <div class="fg"><label>Mano de obra ($)</label><input id="f-mo" type="number" placeholder="Ej: 280000" oninput="guardar('f-mo');calcularTotal()"></div>
+        <div class="fg"><label>Materiales ($)</label><input id="f-mat" type="number" placeholder="Ej: 200000" oninput="guardar('f-mat');calcularTotal()"></div>
+        <div class="fg"><label>Total (calculado automático)</label><input id="f-monto" readonly style="opacity:.6;cursor:not-allowed" oninput="guardar('f-monto')"></div>
+        <div class="fg"><label>Moneda</label><input id="f-moneda" oninput="guardar('f-moneda')"></div>
+        <div class="fg"><label>Incluye (separar con coma)</label><textarea id="f-incl" oninput="guardar('f-incl')"></textarea></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head" onclick="toggleCard(this)">
+        <div class="card-head-left"><span class="card-icon">⭐</span><span class="card-title">VALORES</span></div>
+        <span class="card-arrow">▼</span>
+      </div>
+      <div class="card-body">
+        <div class="fg"><label>Valor 1</label><input id="fv1t" oninput="guardar('fv1t')"></div>
+        <div class="fg"><label>Descripción 1</label><input id="fv1d" oninput="guardar('fv1d')"></div>
+        <div class="fg"><label>Valor 2</label><input id="fv2t" oninput="guardar('fv2t')"></div>
+        <div class="fg"><label>Descripción 2</label><input id="fv2d" oninput="guardar('fv2d')"></div>
+        <div class="fg"><label>Valor 3</label><input id="fv3t" oninput="guardar('fv3t')"></div>
+        <div class="fg"><label>Descripción 3</label><input id="fv3d" oninput="guardar('fv3d')"></div>
+        <div class="fg"><label>Valor 4</label><input id="fv4t" oninput="guardar('fv4t')"></div>
+        <div class="fg"><label>Descripción 4</label><input id="fv4d" oninput="guardar('fv4d')"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head" onclick="toggleCard(this)">
+        <div class="card-head-left"><span class="card-icon">💳</span><span class="card-title">PAGOS</span></div>
+        <span class="card-arrow">▼</span>
+      </div>
+      <div class="card-body">
+        <div class="fg"><label>Métodos (separar con coma)</label><textarea id="f-pagos" oninput="guardar('f-pagos')"></textarea></div>
+        <div class="fg"><label>Destacados en amarillo</label><input id="f-pagos-hl" oninput="guardar('f-pagos-hl')"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head" onclick="toggleCard(this)">
+        <div class="card-head-left"><span class="card-icon">✍️</span><span class="card-title">FIRMA</span></div>
+        <span class="card-arrow">▼</span>
+      </div>
+      <div class="card-body">
+        <div class="fg"><label>Nombre firma empresa</label><input id="f-firmanom" oninput="guardar('f-firmanom')"></div>
+        <div class="fg"><label>Subtítulo firma</label><input id="f-firmasub" oninput="guardar('f-firmasub')"></div>
+        <div class="fg"><label>Nota de validez</label><textarea id="f-nota" oninput="guardar('f-nota')"></textarea></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head" onclick="toggleCard(this)">
+        <div class="card-head-left"><span class="card-icon">📞</span><span class="card-title">CONTACTO</span></div>
+        <span class="card-arrow">▼</span>
+      </div>
+      <div class="card-body">
+        <div class="fg"><label>Nombre pie de página</label><input id="f-fnombre" oninput="guardar('f-fnombre')"></div>
+        <div class="fg"><label>Teléfono</label><input id="f-tel" oninput="guardar('f-tel')"></div>
+        <div class="fg"><label>Instagram (sin @)</label><input id="f-ig" oninput="guardar('f-ig')"></div>
+        <div class="fg"><label>Texto legal</label><input id="f-legal" oninput="guardar('f-legal')"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head" onclick="toggleCard(this)">
+        <div class="card-head-left"><span class="card-icon">🎨</span><span class="card-title">COLORES</span></div>
+        <span class="card-arrow">▼</span>
+      </div>
+      <div class="card-body">
+        <div class="color-grid">
+          <div class="color-item"><label>Acento (rojo)</label><input type="color" id="c-rojo" oninput="guardar('c-rojo')"></div>
+          <div class="color-item"><label>Destaque</label><input type="color" id="c-amarillo" oninput="guardar('c-amarillo')"></div>
+          <div class="color-item"><label>Fondo principal</label><input type="color" id="c-fondo1" oninput="guardar('c-fondo1')"></div>
+          <div class="color-item"><label>Fondo secciones</label><input type="color" id="c-fondo2" oninput="guardar('c-fondo2')"></div>
+          <div class="color-item"><label>Fondo header</label><input type="color" id="c-fondo3" oninput="guardar('c-fondo3')"></div>
+          <div class="color-item"><label>Fondo ítems</label><input type="color" id="c-fondo4" oninput="guardar('c-fondo4')"></div>
+          <div class="color-item"><label>Texto ítems trabajo</label><input type="color" id="c-texto-item" oninput="guardar('c-texto-item')"></div>
+          <div class="color-item"><label>Número ítems</label><input type="color" id="c-num-item" oninput="guardar('c-num-item')"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="bottom-bar">
+    <button class="btn-preview" onclick="mostrarPreview()">👁 VER PRESUPUESTO</button>
+    <button class="btn-pdf" onclick="mostrarPreview(true)">🖨 PDF</button>
+  </div>
+</div>
+
+<!-- ===== MANO DE OBRA ===== -->
+<div id="screen-mo">
+  <div class="mo-bar">
+    <div class="mo-bar-title">🔨 MANO DE OBRA</div>
+    <button class="mo-bar-back" onclick="cerrarMO()">← VOLVER</button>
+  </div>
+  <div class="mo-content">
+    <div class="mo-search">
+      <input type="text" id="mo-search-input" placeholder="🔍 Buscar trabajo..." oninput="renderMO()">
+    </div>
+    <div class="mo-filter" id="mo-cat-filter"></div>
+    <div class="mo-list" id="mo-list"></div>
+    <div class="mo-empty" id="mo-empty" style="display:none">No hay trabajos cargados.<br>Tocá ＋ para agregar uno.</div>
+  </div>
+  <button class="mo-fab" onclick="abrirModalNuevo()">＋</button>
+</div>
+
+<!-- MODAL NUEVO TRABAJO -->
+<div class="mo-modal-bg" id="mo-modal-bg">
+  <div class="mo-modal">
+    <div class="mo-modal-title">NUEVO TRABAJO</div>
+    <div class="fg"><label>Nombre del trabajo</label><input id="mo-new-nombre" placeholder="Ej: Colocar toma doble"></div>
+    <div class="fg"><label>Categoría</label>
+      <select id="mo-new-cat">
+        <option value="Tomas y enchufes">Tomas y enchufes</option>
+        <option value="Iluminación">Iluminación</option>
+        <option value="Tableros">Tableros</option>
+        <option value="Acometidas">Acometidas</option>
+        <option value="Ventilación">Ventilación</option>
+        <option value="Cableado">Cableado</option>
+        <option value="Otro">Otro</option>
+      </select>
+    </div>
+    <div class="fg"><label>Precio actual ($)</label><input id="mo-new-precio" type="number" placeholder="Ej: 8500"></div>
+    <div class="fg"><label>Unidad</label>
+      <select id="mo-new-unidad">
+        <option value="por unidad">por unidad</option>
+        <option value="por punto">por punto</option>
+        <option value="por metro">por metro</option>
+        <option value="por trabajo">por trabajo</option>
+        <option value="por hora">por hora</option>
+      </select>
+    </div>
+    <div class="mo-modal-btns">
+      <button class="mo-modal-cancel" onclick="cerrarModalNuevo()">CANCELAR</button>
+      <button class="mo-modal-ok" onclick="agregarTrabajo()">GUARDAR</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MEMORIA TÉCNICA ===== -->
+<div id="screen-mt">
+<div id="screen-mt-inner">
+<div id="screen-mt-editor">
+  <div class="topbar" style="background:#0a0a0a;border-bottom:2px solid #CC2222;">
+    <div class="topbar-left">
+      <div class="topbar-badge">MT</div>
+      <div>
+        <div class="topbar-title">MEMORIA TÉCNICA</div>
+        <div class="topbar-saved" id="mt-saved-badge">✓ GUARDADO</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;"><button class="topbar-back" onclick="cerrarMT()">← VOLVER</button><button class="topbar-btn" onclick="generarMTPreview()">VER DOC →</button></div>
+  </div>
+
+  <div class="tabs-wrap">
+    <div class="tabs">
+      <button class="tab-btn active" onclick="showTab('plantilla',this)">PLANTILLA</button>
+      <button class="tab-btn" onclick="showTab('general',this)">GENERAL</button>
+      <button class="tab-btn" onclick="showTab('tecnico',this)">TÉCNICO</button>
+      <button class="tab-btn" onclick="showTab('tablero',this)">TABLERO</button>
+      <button class="tab-btn" onclick="showTab('materiales',this)">MATERIALES</button>
+      <button class="tab-btn" onclick="showTab('condiciones',this)">CONDICIONES</button>
+      <button class="tab-btn" onclick="showTab('guardados',this)">GUARDADOS</button>
+    </div>
+  </div>
+
+  <div class="ed-content">
+
+    <!-- TAB: PLANTILLA -->
+    <div class="tab-panel active" id="tab-plantilla">
+      <div class="plantilla-banner">
+        <div class="plantilla-title">Seleccionar tipo de instalación</div>
+        <div class="plantilla-grid">
+          <button class="plantilla-btn" onclick="aplicarPlantilla('vivienda')"><span class="plantilla-icon">🏠</span>Vivienda</button>
+          <button class="plantilla-btn" onclick="aplicarPlantilla('quincho')"><span class="plantilla-icon">🔥</span>Quincho</button>
+          <button class="plantilla-btn" onclick="aplicarPlantilla('tablero')"><span class="plantilla-icon">⚡</span>Tablero</button>
+          <button class="plantilla-btn" onclick="aplicarPlantilla('oficina')"><span class="plantilla-icon">🏢</span>Oficina</button>
+          <button class="plantilla-btn" onclick="aplicarPlantilla('local')"><span class="plantilla-icon">🏪</span>Local com.</button>
+          <button class="plantilla-btn" onclick="aplicarPlantilla('iluminacion')"><span class="plantilla-icon">💡</span>Iluminación</button>
+          <button class="plantilla-btn" onclick="aplicarPlantilla('ac')"><span class="plantilla-icon">❄️</span>Aire Acond.</button>
+          <button class="plantilla-btn" onclick="aplicarPlantilla('obra')"><span class="plantilla-icon">🏗️</span>Obra nueva</button>
+        </div>
+      </div>
+
+      <div class="mt-card">
+        <div class="mt-card-head" onclick="toggleMTCard(this)">
+          <div class="mt-card-left">
+            <div class="mt-card-num">⚙</div>
+            <div><div class="mt-card-title">OPCIONES GLOBALES</div><div class="mt-card-sub">Normativa y extras</div></div>
+          </div>
+          <span class="mt-card-arrow open">▼</span>
+        </div>
+        <div class="mt-card-body open">
+          <div class="toggle-row">
+            <div class="toggle-label">Incluir Normativa AEA
+              <small>Agrega referencia a reglamentación vigente AEA</small>
+            </div>
+            <label class="toggle"><input type="checkbox" id="opt-aea" onchange="mtGuardar()"><span class="toggle-slider"></span></label>
+          </div>
+          <div id="aea-preview-box" class="aea-box" style="display:none">
+            <div class="aea-title">⚖ Normativa AEA</div>
+            <p>La instalación será realizada respetando la reglamentación vigente de la Asociación Electrotécnica Argentina (AEA 90364) para instalaciones eléctricas de baja tensión en edificios.</p>
+          </div>
+          <div class="toggle-row" style="margin-top:10px;">
+            <div class="toggle-label">Incluir sección Garantía</div>
+            <label class="toggle"><input type="checkbox" id="opt-garantia" checked onchange="mtGuardar()"><span class="toggle-slider"></span></label>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-label">Incluir tabla de materiales</div>
+            <label class="toggle"><input type="checkbox" id="opt-materiales" checked onchange="mtGuardar()"><span class="toggle-slider"></span></label>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-label">Incluir detalle técnico de instalación</div>
+            <label class="toggle"><input type="checkbox" id="opt-tecnico" checked onchange="mtGuardar()"><span class="toggle-slider"></span></label>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-label">Incluir tableros y protecciones</div>
+            <label class="toggle"><input type="checkbox" id="opt-tablero" checked onchange="mtGuardar()"><span class="toggle-slider"></span></label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: GENERAL -->
+    <div class="tab-panel" id="tab-general">
+      <div class="mt-card">
+        <div class="mt-card-head" onclick="toggleMTCard(this)">
+          <div class="mt-card-left"><div class="mt-card-num">1</div><div><div class="mt-card-title">DATOS EMPRESA</div></div></div>
+          <span class="mt-card-arrow open">▼</span>
+        </div>
+        <div class="mt-card-body open">
+          <div class="fg"><label>Nombre empresa</label><input id="mt-emp" oninput="mtGuardar()"></div>
+          <div class="fg"><label>Responsable técnico</label><input id="mt-responsable" oninput="mtGuardar()" placeholder="Ej: Juan Pérez — Electricista matriculado"></div>
+          <div class="fg"><label>Matrícula / registro</label><input id="mt-matricula" oninput="mtGuardar()" placeholder="Ej: Mat. 12345 — CABA"></div>
+          <div class="fg"><label>Teléfono</label><input id="mt-tel" oninput="mtGuardar()"></div>
+          <div class="fg"><label>Instagram / web</label><input id="mt-ig" oninput="mtGuardar()"></div>
+        </div>
+      </div>
+
+      <div class="mt-card">
+        <div class="mt-card-head" onclick="toggleMTCard(this)">
+          <div class="mt-card-left"><div class="mt-card-num">2</div><div><div class="mt-card-title">DATOS CLIENTE Y OBRA</div></div></div>
+          <span class="mt-card-arrow">▼</span>
+        </div>
+        <div class="mt-card-body">
+          <div class="fg"><label>Nombre cliente</label><input id="mt-cli" oninput="mtGuardar()"></div>
+          <div class="fg"><label>Dirección de la obra</label><textarea id="mt-dir" rows="2" oninput="mtGuardar()"></textarea></div>
+          <div class="fg-row">
+            <div class="fg"><label>Fecha</label><input id="mt-fecha" oninput="mtGuardar()"></div>
+            <div class="fg"><label>N° Presupuesto</label><input id="mt-nro" oninput="mtGuardar()"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-card">
+        <div class="mt-card-head" onclick="toggleMTCard(this)">
+          <div class="mt-card-left"><div class="mt-card-num">3</div><div><div class="mt-card-title">DESCRIPCIÓN GENERAL</div></div></div>
+          <span class="mt-card-arrow">▼</span>
+        </div>
+        <div class="mt-card-body">
+          <div class="fg"><label>Descripción del trabajo</label><textarea id="mt-descripcion" rows="5" oninput="mtGuardar()"></textarea></div>
+          <div class="fg"><label>Observaciones adicionales</label><textarea id="mt-observaciones" rows="3" oninput="mtGuardar()"></textarea></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: TÉCNICO -->
+    <div class="tab-panel" id="tab-tecnico">
+      <div class="mt-card">
+        <div class="mt-card-head" onclick="toggleMTCard(this)">
+          <div class="mt-card-left"><div class="mt-card-num">4</div><div><div class="mt-card-title">CABLEADO</div></div></div>
+          <span class="mt-card-arrow open">▼</span>
+        </div>
+        <div class="mt-card-body open">
+          <div class="fg-row">
+            <div class="fg"><label>Tipo de cable</label>
+              <select id="mt-cable-tipo" oninput="mtGuardar()">
+                <option value="Unipolar IRAM NM 247-3">Unipolar IRAM NM 247-3</option>
+                <option value="Bipolar con tierra">Bipolar con tierra</option>
+                <option value="Trifásico + neutro">Trifásico + neutro</option>
+                <option value="Libre de halógenos">Libre de halógenos</option>
+                <option value="Otro">Otro</option>
+              </select>
+            </div>
+            <div class="fg"><label>Sección (mm²)</label>
+              <select id="mt-cable-sec" oninput="mtGuardar()">
+                <option value="1,5 mm²">1,5 mm²</option>
+                <option value="2,5 mm²" selected>2,5 mm²</option>
+                <option value="4 mm²">4 mm²</option>
+                <option value="6 mm²">6 mm²</option>
+                <option value="10 mm²">10 mm²</option>
+                <option value="16 mm²">16 mm²</option>
+              </select>
+            </div>
+          </div>
+          <div class="fg"><label>Colores normalizados</label><input id="mt-colores" oninput="mtGuardar()" placeholder="Ej: Fase: marrón/negro, Neutro: azul, Tierra: amarillo/verde"></div>
+          <div class="fg"><label>Tipo de canalización</label>
+            <select id="mt-canalizacion" oninput="mtGuardar()">
+              <option value="Cañería corrugada embutida">Cañería corrugada embutida</option>
+              <option value="Caño metálico semipesado">Caño metálico semipesado</option>
+              <option value="Bandeja porta cables">Bandeja porta cables</option>
+              <option value="Canaleta plástica adherida">Canaleta plástica adherida</option>
+              <option value="Visible sobre pared">Visible sobre pared</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-card">
+        <div class="mt-card-head" onclick="toggleMTCard(this)">
+          <div class="mt-card-left"><div class="mt-card-num">4b</div><div><div class="mt-card-title">CAJAS Y PUESTA A TIERRA</div></div></div>
+          <span class="mt-card-arrow">▼</span>
+        </div>
+        <div class="mt-card-body">
+          <div class="fg"><label>Tipo de cajas</label>
+            <select id="mt-cajas" oninput="mtGuardar()">
+              <option value="Cajas rectangulares 10x5 cm plásticas">Cajas rectangulares 10x5 cm plásticas</option>
+              <option value="Cajas octogonales metálicas">Cajas octogonales metálicas</option>
+              <option value="Cajas de paso con tapa ciega">Cajas de paso con tapa ciega</option>
+            </select>
+          </div>
+          <div class="fg"><label>Puesta a tierra</label><textarea id="mt-tierra" rows="3" oninput="mtGuardar()" placeholder="Ej: Se vincula a la jabalina existente mediante conductor de 2,5 mm² amarillo/verde..."></textarea></div>
+          <div class="fg"><label>Notas técnicas adicionales</label><textarea id="mt-notas-tec" rows="3" oninput="mtGuardar()"></textarea></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: TABLERO -->
+    <div class="tab-panel" id="tab-tablero">
+      <div class="mt-card">
+        <div class="mt-card-head" onclick="toggleMTCard(this)">
+          <div class="mt-card-left"><div class="mt-card-num">5</div><div><div class="mt-card-title">PROTECCIONES GENERALES</div></div></div>
+          <span class="mt-card-arrow open">▼</span>
+        </div>
+        <div class="mt-card-body open">
+          <div class="fg-row">
+            <div class="fg"><label>Diferencial (A)</label><input id="mt-dif-amp" oninput="mtGuardar()" placeholder="Ej: 25A"></div>
+            <div class="fg"><label>Sensibilidad</label>
+              <select id="mt-dif-sens" oninput="mtGuardar()">
+                <option value="30 mA">30 mA</option>
+                <option value="300 mA">300 mA</option>
+                <option value="10 mA">10 mA</option>
+              </select>
+            </div>
+          </div>
+          <div class="fg-row">
+            <div class="fg"><label>Polos diferencial</label>
+              <select id="mt-dif-pol" oninput="mtGuardar()">
+                <option value="2P">2P (Bipolar)</option>
+                <option value="4P">4P (Tetrapolar)</option>
+              </select>
+            </div>
+            <div class="fg"><label>Marca diferencial</label><input id="mt-dif-marca" oninput="mtGuardar()" placeholder="Ej: Schneider"></div>
+          </div>
+          <div class="fg"><label>Termomagnéticas instaladas</label><textarea id="mt-termos" rows="4" oninput="mtGuardar()" placeholder="Ej: 1x 16A monofásica (iluminación), 1x 20A monofásica (tomas), 1x 25A monofásica (AC)..."></textarea></div>
+          <div class="fg-row">
+            <div class="fg"><label>Curva</label>
+              <select id="mt-curva" oninput="mtGuardar()">
+                <option value="Curva C">Curva C</option>
+                <option value="Curva B">Curva B</option>
+                <option value="Curva D">Curva D</option>
+              </select>
+            </div>
+            <div class="fg"><label>Poder de corte (kA)</label>
+              <select id="mt-poder-corte" oninput="mtGuardar()">
+                <option value="6 kA">6 kA</option>
+                <option value="10 kA">10 kA</option>
+                <option value="15 kA">15 kA</option>
+              </select>
+            </div>
+          </div>
+          <div class="fg"><label>Descripción del tablero</label><textarea id="mt-tablero-desc" rows="3" oninput="mtGuardar()" placeholder="Ej: Tablero seccional 12 módulos DIN, tapa opaca, riel DIN, barras de neutros y tierra independientes..."></textarea></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: MATERIALES -->
+    <div class="tab-panel" id="tab-materiales">
+      <div style="margin-bottom:12px;">
+        <div class="mat-table-head">
+          <span>Cant.</span><span>Material / descripción</span><span>Marca</span><span></span>
+        </div>
+        <div id="mat-editor"></div>
+        <button class="btn-add-mat" onclick="addMaterial()">+ Agregar material</button>
+      </div>
+    </div>
+
+    <!-- TAB: CONDICIONES -->
+    <div class="tab-panel" id="tab-condiciones">
+      <div class="mt-card">
+        <div class="mt-card-head" onclick="toggleMTCard(this)">
+          <div class="mt-card-left"><div class="mt-card-num">7</div><div><div class="mt-card-title">CONDICIONES DEL TRABAJO</div></div></div>
+          <span class="mt-card-arrow open">▼</span>
+        </div>
+        <div class="mt-card-body open">
+          <div class="fg"><label>Condiciones (una por línea)</label>
+            <textarea id="mt-condiciones" rows="8" oninput="mtGuardar()"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-card">
+        <div class="mt-card-head" onclick="toggleMTCard(this)">
+          <div class="mt-card-left"><div class="mt-card-num">8</div><div><div class="mt-card-title">GARANTÍA</div></div></div>
+          <span class="mt-card-arrow">▼</span>
+        </div>
+        <div class="mt-card-body">
+          <div class="fg"><label>Período de garantía</label><input id="mt-garantia-periodo" oninput="mtGuardar()" placeholder="Ej: 12 meses"></div>
+          <div class="fg"><label>Texto de garantía</label>
+            <textarea id="mt-garantia" rows="5" oninput="mtGuardar()"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: GUARDADOS -->
+    <div class="tab-panel" id="tab-guardados">
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <input id="mt-save-name" placeholder="Nombre de esta memoria técnica..." style="flex:1;background:#0d0d0d;border:1px solid var(--borde);border-radius:8px;color:var(--txt);font-family:'Rajdhani',sans-serif;font-size:14px;padding:9px 12px;outline:none;">
+        <button onclick="guardarMemoria()" style="background:var(--rojo);border:none;border-radius:8px;color:#fff;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:2px;padding:9px 14px;cursor:pointer;">GUARDAR</button>
+      </div>
+      <div id="saved-list"></div>
+    </div>
+
+  </div><!-- /ed-content -->
+
+  <div class="bottom-bar-mt">
+    <button class="btn-generar" onclick="generarMTPreview()">📄 GENERAR MEMORIA TÉCNICA</button>
+    <button class="btn-pdf-bottom" onclick="generarMTPreview(true)">🖨 PDF</button>
+  </div>
+</div>
+
+</div><!-- /screen-mt-inner -->
+
+<!-- MT PREVIEW -->
+<div id="mt-preview">
+  <div class="prev-bar">
+    <button class="btn-prev-back" onclick="volverEditor()">← EDITAR</button>
+    <div class="prev-bar-title">MEMORIA TÉCNICA</div>
+    <button class="btn-prev-pdf" onclick="window.print()">🖨 PDF</button>
+  </div>
+
+  <div id="doc-mt">
+    <!-- generado por JS -->
+  </div>
+</div>
+
+
+</div><!-- /screen-mt -->
+
+
+<!-- ===== GARANTÍA ===== -->
+<div id="screen-gar">
+  <div class="gar-bar">
+    <div class="gar-bar-title">🛡 GARANTÍAS</div>
+    <button class="gar-bar-back" onclick="cerrarGar()">← VOLVER</button>
+  </div>
+  <div class="gar-content">
+    <div class="gar-list" id="gar-list"></div>
+    <div class="gar-empty" id="gar-empty" style="display:none">No hay garantías cargadas.<br>Tocá ＋ para agregar una.</div>
+  </div>
+  <button class="gar-fab" onclick="garNueva()">＋</button>
+</div>
+
+<!-- ===== TRABAJOS REALIZADOS ===== -->
+<div id="screen-tr">
+  <div class="tr-bar">
+    <div class="tr-bar-title">📁 TRABAJOS</div>
+    <button class="tr-bar-back" onclick="cerrarTR()">← VOLVER</button>
+  </div>
+  <div class="tr-content">
+    <div class="tr-resumen" id="tr-resumen"></div>
+    <div class="tr-filter-row" id="tr-filters"></div>
+    <div class="tr-list" id="tr-list"></div>
+    <div class="tr-empty" id="tr-empty" style="display:none">No hay trabajos registrados.<br>Tocá ＋ para agregar uno.</div>
+  </div>
+  <button class="tr-fab" onclick="trNuevo()">＋</button>
+</div>
+
+<!-- PREVIEW -->
+<div id="screen-preview">
+  <div class="preview-bar">
+    <button class="btn-back" onclick="volverEditor()">← EDITAR</button>
+    <div class="preview-bar-title">VISTA PREVIA</div>
+    <button class="btn-print" onclick="window.print()">🖨 PDF</button>
+  </div>
+  <div id="presupuesto">
+    <div class="p-header" id="ph">
+      <div>
+        <img id="p-logo-img" alt="Logo">
+        <div class="p-bolt" id="p-bolt"></div>
+        <div class="p-empresa" id="p-emp"></div>
+        <div class="p-rubro" id="p-rub"></div>
+      </div>
+      <div>
+        <div class="p-titulo" id="p-doctit"></div>
+        <div class="p-meta">FECHA<b id="p-fecha"></b><br>N°<b id="p-nro"></b><br>VÁLIDO<b id="p-valid"></b></div>
+      </div>
+    </div>
+    <div class="p-stripe" id="p-stripe"></div>
+    <div class="p-client" id="p-client-el">
+      <div><div class="p-fl" id="p-fl1">Cliente</div><div class="p-fv" id="p-cli"></div></div>
+      <div><div class="p-fl" id="p-fl2">Dirección</div><div class="p-fv" id="p-dir"></div></div>
+    </div>
+    <div class="p-sec" id="p-work-sec">
+      <div class="p-sec-title" id="p-sech-work">Trabajo a realizar</div>
+      <div id="p-work-list"></div>
+    </div>
+    <div class="p-total-box" id="p-tbox">
+      <div class="p-total-hdr" id="p-thdr"><div class="p-total-hdr-txt">DETALLE DEL SERVICIO</div></div>
+      <div class="p-total-body">
+        <!-- desglose -->
+        <div class="p-desglose" id="p-desglose-wrap">
+          <div class="p-desglose-row" id="p-mo-row">
+            <span class="p-desglose-label" id="p-mo-lbl">🔨 Mano de obra</span>
+            <span class="p-desglose-val" id="p-mo-val"></span>
+          </div>
+          <div class="p-desglose-row" id="p-mat-row">
+            <span class="p-desglose-label" id="p-mat-lbl">🧰 Materiales</span>
+            <span class="p-desglose-val" id="p-mat-val"></span>
+          </div>
+        </div>
+        <div class="p-desglose-divider" id="p-div-line"></div>
+        <div class="p-desglose-total-row" id="p-total-row" style="margin:0 16px 14px;">
+          <span class="p-desglose-total-label" id="p-total-lbl2">TOTAL</span>
+          <span class="p-desglose-total-val" id="p-monto"></span>
+        </div>
+        <div class="p-total-cur" id="p-moneda"></div>
+        <div class="p-inc-row" id="p-incl"></div>
+      </div>
+    </div>
+    <div class="p-sec" id="p-feats-sec">
+      <div class="p-sec-title" id="p-sech-feats">Por qué elegirnos</div>
+      <div class="p-feat-grid" id="p-feats"></div>
+    </div>
+    <div class="p-sec" id="p-pay-sec">
+      <div class="p-sec-title" id="p-sech-pay">Medios de pago</div>
+      <div class="p-pay-list" id="p-pagos"></div>
+    </div>
+    <div class="p-sig" id="p-sig-el">
+      <div>
+        <div class="p-sig-line"><div class="p-sig-firma" id="p-firmanom"></div></div>
+        <div class="p-sig-n">Firma autorizada</div>
+        <div class="p-sig-s" id="p-firmasub"></div>
+      </div>
+      <div style="text-align:right">
+        <div class="p-sig-line" style="height:34px"></div>
+        <div class="p-sig-n">Firma del cliente</div>
+        <div class="p-sig-s">Aclaración y DNI</div>
+        <div class="p-validity" id="p-nota"></div>
+      </div>
+    </div>
+    <div class="p-footer" id="p-footer-el">
+      <div class="p-footer-brand" id="p-fnombre"></div>
+      <div class="p-footer-info">
+        <span id="p-tel"></span><br>
+        <a id="p-ig"></a><br>
+        <span id="p-legal" style="color:#555;font-size:10px;"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var DEFAULTS = {
+  'f-emp':'ROMA','f-rub':'Electricistas','f-doctit':'PRESUPUESTO',
+  'f-fecha':'19 / 05 / 2025','f-nro':'#0047','f-valid':'19 / 06 / 2025',
+  'f-cli':'Martínez, Roberto','f-dir':'Av. Corrientes 2840, 3°B\nCABA, Buenos Aires',
+  'f-monto':'$480.000','f-moneda':'PESOS ARGENTINOS (ARS)',
+  'f-mo':'280000','f-mat':'200000',
+  'f-incl':'Materiales incluidos,Mano de obra incluida,Garantía escrita',
+  'fv1t':'Seguridad','fv1d':'Instalaciones certificadas IRAM',
+  'fv2t':'Calidad','fv2d':'Materiales de primera línea',
+  'fv3t':'Cumplimiento','fv3d':'Respetamos los plazos pactados',
+  'fv4t':'Atención rápida','fv4d':'Respuesta inmediata en el día',
+  'f-pagos':'Efectivo,Transferencia,MercadoPago,MODO,Débito,Cheque',
+  'f-pagos-hl':'Efectivo,Transferencia',
+  'f-firmanom':'Roma Electricistas','f-firmasub':'Roma Electricistas SRL',
+  'f-nota':'Presupuesto válido por 30 días\nSujeto a disponibilidad de materiales',
+  'f-fnombre':'ROMA ELECTRICISTAS','f-tel':'11 3240-2423',
+  'f-ig':'romaelectricistas','f-legal':'MAT. TÉCNICA VERIFICADA',
+  'c-rojo':'#CC2222','c-amarillo':'#FFD700',
+  'c-fondo1':'#111111','c-fondo2':'#141414','c-fondo3':'#0a0a0a','c-fondo4':'#181818',
+  'c-texto-item':'#ffffff','c-num-item':'#CC2222'
+};
+
+var workItems = [];
+var logoDataUrl = '';
+var saveTimer = null;
+
+function g(id){return document.getElementById(id);}
+function val(id){var el=g(id);return el?el.value:'';}
+function set(id,txt){var el=g(id);if(el)el.textContent=txt;}
+function setH(id,h){var el=g(id);if(el)el.innerHTML=h;}
+
+// STORAGE
+function guardar(id){
+  try{localStorage.setItem('pres_'+id, val(id));}catch(e){}
+  mostrarGuardado();
+}
+function guardarItems(){
+  try{localStorage.setItem('pres_workItems', JSON.stringify(workItems));}catch(e){}
+  mostrarGuardado();
+}
+function guardarLogo(data){
+  try{localStorage.setItem('pres_logo', data);}catch(e){}
+}
+function mostrarGuardado(){
+  var b=g('save-badge');
+  b.textContent='✓ GUARDADO';b.style.color='rgba(255,255,255,.8)';
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(function(){b.style.color='rgba(255,255,255,.4)';},2000);
+}
+
+function cargarTodo(){
+  // campos de texto
+  Object.keys(DEFAULTS).forEach(function(id){
+    var el=g(id); if(!el)return;
+    var saved=null;
+    try{saved=localStorage.getItem('pres_'+id);}catch(e){}
+    el.value = saved!==null ? saved : DEFAULTS[id];
+  });
+  // trabajo items
+  var savedW=null;
+  try{savedW=localStorage.getItem('pres_workItems');}catch(e){}
+  if(savedW){
+    try{workItems=JSON.parse(savedW);}catch(e){workItems=defaultWork();}
+  } else {
+    workItems=defaultWork();
+  }
+  // logo
+  var savedL=null;
+  try{savedL=localStorage.getItem('pres_logo');}catch(e){}
+  if(savedL){
+    logoDataUrl=savedL;
+    g('logo-preview-img').src=savedL;g('logo-preview-img').style.display='block';
+    g('logo-hint').style.display='none';
+  }
+  renderWorkEditor();
+  calcularTotal();
+}
+
+function defaultWork(){
+  return [
+    'Revisión de instalación eléctrica',
+    'Cambio de térmica y disyuntor',
+    'Instalación de tomas nuevas',
+    'Colocación de luminarias LED',
+    'Orden y canalización de cableado'
+  ];
+}
+
+// LOGO
+g('logo-file-input').addEventListener('change',function(e){
+  var f=e.target.files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=function(ev){
+    logoDataUrl=ev.target.result;
+    g('logo-preview-img').src=logoDataUrl;g('logo-preview-img').style.display='block';
+    g('logo-hint').style.display='none';
+    guardarLogo(logoDataUrl);
+    mostrarGuardado();
+  };
+  r.readAsDataURL(f);
+});
+function quitarLogo(){
+  logoDataUrl='';
+  g('logo-preview-img').style.display='none';
+  g('logo-hint').style.display='block';
+  g('logo-file-input').value='';
+  try{localStorage.removeItem('pres_logo');}catch(e){}
+  mostrarGuardado();
+}
+
+// CARDS
+function toggleCard(head){
+  var body=head.nextElementSibling;
+  var arrow=head.querySelector('.card-arrow');
+  body.classList.toggle('open');
+  arrow.classList.toggle('open');
+}
+
+// WORK ITEMS
+function renderWorkEditor(){
+  var el=g('work-editor');el.innerHTML='';
+  workItems.forEach(function(item,i){
+    var d=document.createElement('div');d.className='wi-item';
+    d.innerHTML='<input type="text" value="'+item.replace(/"/g,'&quot;')+'" oninput="workItems['+i+']=this.value;guardarItems()"><button class="btn-del" onclick="removeWork('+i+')">✕</button>';
+    el.appendChild(d);
+  });
+}
+function calcularTotal(){
+  var mo=parseFloat(val('f-mo'))||0;
+  var mat=parseFloat(val('f-mat'))||0;
+  var total=mo+mat;
+  var el=g('f-monto');
+  if(el){
+    el.value='$'+total.toLocaleString('es-AR');
+    try{localStorage.setItem('pres_f-monto',el.value);}catch(e){}
+  }
+}
+
+function addWork(){workItems.push('Nuevo ítem');guardarItems();renderWorkEditor();}
+function removeWork(i){workItems.splice(i,1);guardarItems();renderWorkEditor();}
+
+// BUILD PREVIEW
+function buildPreview(){
+  var rojo=val('c-rojo')||'#CC2222';
+  var amarillo=val('c-amarillo')||'#FFD700';
+  var f1=val('c-fondo1')||'#111111';
+  var f2=val('c-fondo2')||'#141414';
+  var f3=val('c-fondo3')||'#0a0a0a';
+  var f4=val('c-fondo4')||'#181818';
+
+  if(logoDataUrl){
+    g('p-logo-img').src=logoDataUrl;g('p-logo-img').style.display='block';
+    g('p-bolt').style.display='none';
+  } else {
+    g('p-logo-img').style.display='none';
+    g('p-bolt').style.display='block';g('p-bolt').style.background=rojo;
+  }
+
+  set('p-emp',val('f-emp'));set('p-rub',val('f-rub'));set('p-doctit',val('f-doctit'));
+  g('p-fecha').textContent=val('f-fecha');
+  g('p-nro').textContent=val('f-nro');
+  g('p-valid').textContent=val('f-valid');
+  set('p-cli',val('f-cli'));
+  setH('p-dir',val('f-dir').replace(/\n/g,'<br>'));
+  set('p-monto',val('f-monto'));set('p-moneda',val('f-moneda'));
+
+  // desglose MO y materiales
+  var mo=parseFloat(val('f-mo'))||0;
+  var mat=parseFloat(val('f-mat'))||0;
+  var moEl=g('p-mo-val');var matEl=g('p-mat-val');
+  if(moEl)moEl.textContent='$'+mo.toLocaleString('es-AR');
+  if(matEl)matEl.textContent='$'+mat.toLocaleString('es-AR');
+  // mostrar u ocultar filas según si tienen valor
+  var moRow=g('p-mo-row');var matRow=g('p-mat-row');
+  var divLine=g('p-div-line');
+  var tieneDesglose=(mo>0||mat>0);
+  if(moRow)moRow.style.display=mo>0?'flex':'none';
+  if(matRow)matRow.style.display=mat>0?'flex':'none';
+  if(divLine)divLine.style.display=tieneDesglose?'block':'none';
+  set('p-firmanom',val('f-firmanom'));set('p-firmasub',val('f-firmasub'));
+  setH('p-nota',val('f-nota').replace(/\n/g,'<br>'));
+  set('p-fnombre',val('f-fnombre'));
+  g('p-tel').textContent='☎ '+val('f-tel');
+  var ig=val('f-ig');g('p-ig').textContent='📷 @'+ig;g('p-ig').href='https://instagram.com/'+ig;
+  set('p-legal',val('f-legal'));
+
+  // colores estructura
+  var pres=g('presupuesto');
+  pres.style.background=f1;pres.style.color='#e0e0e0';
+  g('ph').style.background=f3;g('ph').style.borderBottom='3px solid '+rojo;
+  g('p-rub').style.color=rojo;g('p-fl1').style.color=rojo;g('p-fl2').style.color=rojo;
+  g('p-doctit').style.color=amarillo;
+  g('p-stripe').style.background='linear-gradient(90deg,'+rojo+','+rojo+'66 50%,'+amarillo+' 100%)';
+  g('p-client-el').style.background=f2;
+  g('p-work-sec').style.background=f1;
+  g('p-sech-work').style.color=amarillo;g('p-sech-work').style.borderBottomColor=rojo;
+  g('p-tbox').style.borderColor=rojo;g('p-tbox').style.background=f3;
+  g('p-thdr').style.background=rojo;g('p-monto').style.color=amarillo;
+  // colores desglose
+  var moRow=g('p-mo-row');var matRow=g('p-mat-row');
+  if(moRow){moRow.style.background='rgba(204,34,34,.08)';}
+  if(matRow){matRow.style.background='rgba(255,215,0,.06)';}
+  if(g('p-mo-lbl'))g('p-mo-lbl').style.color=rojo;
+  if(g('p-mo-val'))g('p-mo-val').style.color=rojo;
+  if(g('p-mat-lbl'))g('p-mat-lbl').style.color=amarillo;
+  if(g('p-mat-val'))g('p-mat-val').style.color=amarillo;
+  var totalRow=g('p-total-row');
+  if(totalRow){totalRow.style.borderColor=rojo;totalRow.style.background=f3;}
+  if(g('p-total-lbl2'))g('p-total-lbl2').style.color='#e0e0e0';
+  if(g('p-monto'))g('p-monto').style.color=amarillo;
+  g('p-feats-sec').style.background=f2;
+  g('p-sech-feats').style.color=amarillo;g('p-sech-feats').style.borderBottomColor=rojo;
+  g('p-pay-sec').style.background=f1;
+  g('p-sech-pay').style.color=amarillo;g('p-sech-pay').style.borderBottomColor=rojo;
+  g('p-sig-el').style.background=f2;g('p-sig-el').style.borderBottomColor=rojo;
+  g('p-footer-el').style.background=f3;
+  g('p-fnombre').style.color=rojo;g('p-ig').style.color=amarillo;
+
+  // trabajos
+  var wl=g('p-work-list');wl.innerHTML='';
+  var txtItem=val('c-texto-item')||'#ffffff';
+  var numItem=val('c-num-item')||'#CC2222';
+  workItems.forEach(function(item,i){
+    wl.innerHTML+='<div class="p-wi" style="background:'+f4+';border-left-color:'+rojo+';color:'+txtItem+'"><span class="p-wn" style="color:'+numItem+'">0'+(i+1)+'</span>'+item+'</div>';
+  });
+
+  // incluye
+  var incEl=g('p-incl');incEl.innerHTML='';
+  val('f-incl').split(',').forEach(function(t){
+    t=t.trim();if(!t)return;
+    var d=document.createElement('div');d.className='p-inc';d.textContent=t;incEl.appendChild(d);
+  });
+
+  // features
+  var fg=g('p-feats');fg.innerHTML='';
+  [{t:val('fv1t'),d:val('fv1d'),i:'🛡️'},{t:val('fv2t'),d:val('fv2d'),i:'⭐'},
+   {t:val('fv3t'),d:val('fv3d'),i:'✅'},{t:val('fv4t'),d:val('fv4d'),i:'⚡'}]
+  .forEach(function(f){
+    fg.innerHTML+='<div class="p-feat" style="background:'+f3+';border-top-color:'+rojo+'"><div class="p-feat-n" style="color:'+amarillo+'">'+f.i+' '+f.t+'</div><div class="p-feat-d">'+f.d+'</div></div>';
+  });
+
+  // pagos
+  var pm=g('p-pagos');pm.innerHTML='';
+  var hl=val('f-pagos-hl').split(',').map(function(x){return x.trim();});
+  val('f-pagos').split(',').forEach(function(p){
+    p=p.trim();if(!p)return;
+    var isHL=hl.indexOf(p)>=0;
+    var d=document.createElement('div');d.className='p-pay';
+    d.style.background=isHL?'rgba(255,215,0,.08)':'#1a1a1a';
+    d.style.border='1px solid '+(isHL?amarillo:'#333');
+    d.style.color=isHL?amarillo:'#ccc';
+    d.textContent=p;pm.appendChild(d);
+  });
+}
+
+function mostrarPreview(imprimir){
+  var nav=g('main-nav');if(nav)nav.style.display='none';
+  buildPreview();
+  g('screen-editor').style.display='none';
+  g('screen-preview').style.display='block';
+  window.scrollTo(0,0);
+  if(imprimir) setTimeout(function(){window.print();},500);
+}
+function volverEditor(){
+  g('screen-preview').style.display='none';
+  g('screen-editor').style.display='block';
+  var nav=g('main-nav');if(nav)nav.style.display='flex';
+  navSetActive('pres');
+  window.scrollTo(0,0);
+}
+
+
+// ===== MANO DE OBRA =====
+var moTrabajos = [];
+var moFiltroActivo = 'Todos';
+
+function moGuardar(){
+  try{localStorage.setItem('mo_trabajos', JSON.stringify(moTrabajos));}catch(e){}
+  mostrarGuardado();
+}
+
+function moCargar(){
+  var saved = null;
+  try{saved = localStorage.getItem('mo_trabajos');}catch(e){}
+  if(saved){
+    try{moTrabajos = JSON.parse(saved);}catch(e){moTrabajos=[];}
+  } else {
+    // ejemplos por defecto
+    moTrabajos = [
+      {id:1,nombre:'Colocar toma simple',cat:'Tomas y enchufes',unidad:'por punto',precio:6500,historial:[{fecha:fechaHoy(),precio:6500}]},
+      {id:2,nombre:'Colocar toma doble',cat:'Tomas y enchufes',unidad:'por punto',precio:8500,historial:[{fecha:fechaHoy(),precio:8500}]},
+      {id:3,nombre:'Colocar ventilador de techo',cat:'Ventilación',unidad:'por unidad',precio:12000,historial:[{fecha:fechaHoy(),precio:12000}]},
+      {id:4,nombre:'Instalación acometida',cat:'Acometidas',unidad:'por trabajo',precio:35000,historial:[{fecha:fechaHoy(),precio:35000}]},
+      {id:5,nombre:'Cambio de tablero',cat:'Tableros',unidad:'por trabajo',precio:55000,historial:[{fecha:fechaHoy(),precio:55000}]},
+      {id:6,nombre:'Colocar luminaria LED',cat:'Iluminación',unidad:'por unidad',precio:5000,historial:[{fecha:fechaHoy(),precio:5000}]},
+    ];
+    moGuardar();
+  }
+}
+
+function fechaHoy(){
+  var d=new Date();
+  return d.getDate().toString().padStart(2,'0')+'/'+(d.getMonth()+1).toString().padStart(2,'0')+'/'+d.getFullYear();
+}
+
+function moCategorias(){
+  var cats=['Todos'];
+  moTrabajos.forEach(function(t){if(cats.indexOf(t.cat)<0)cats.push(t.cat);});
+  return cats;
+}
+
+function renderMOFiltros(){
+  var el=g('mo-cat-filter');el.innerHTML='';
+  moCategorias().forEach(function(cat){
+    var b=document.createElement('button');
+    b.className='mo-cat-btn'+(moFiltroActivo===cat?' active':'');
+    b.textContent=cat;
+    b.onclick=function(){moFiltroActivo=cat;renderMOFiltros();renderMO();};
+    el.appendChild(b);
+  });
+}
+
+function renderMO(){
+  var busq=(g('mo-search-input').value||'').toLowerCase().trim();
+  var lista=moTrabajos.filter(function(t){
+    var matchCat=moFiltroActivo==='Todos'||t.cat===moFiltroActivo;
+    var matchBusq=!busq||t.nombre.toLowerCase().indexOf(busq)>=0||t.cat.toLowerCase().indexOf(busq)>=0;
+    return matchCat&&matchBusq;
+  });
+  var el=g('mo-list');el.innerHTML='';
+  g('mo-empty').style.display=lista.length===0?'block':'none';
+  lista.forEach(function(t){
+    var div=document.createElement('div');div.className='mo-item';
+    var histHTML='';
+    if(t.historial&&t.historial.length>1){
+      var hist=t.historial.slice().reverse().slice(0,5);
+      histHTML='<div class="mo-history"><div class="mo-history-title">Historial de precios</div><div class="mo-history-list">';
+      hist.forEach(function(h,i){
+        histHTML+='<div class="mo-history-item"><span class="mo-history-date">'+h.fecha+(i===0?' ← actual':'')+'</span><span class="mo-history-val">$'+Number(h.precio).toLocaleString('es-AR')+'</span></div>';
+      });
+      histHTML+='</div></div>';
+    } else {
+      histHTML='<div class="mo-history-empty">Sin historial previo</div>';
+    }
+    div.innerHTML=
+      '<div class="mo-item-head" onclick="toggleMOItem(this)">'+
+        '<div class="mo-item-info">'+
+          '<div class="mo-item-name">'+t.nombre+'</div>'+
+          '<div class="mo-item-cat">'+t.cat+'</div>'+
+        '</div>'+
+        '<div>'+
+          '<div class="mo-item-price">$'+Number(t.precio).toLocaleString('es-AR')+'</div>'+
+          '<div class="mo-item-price-lbl">'+t.unidad+'</div>'+
+        '</div>'+
+        '<span class="mo-item-arrow">▼</span>'+
+      '</div>'+
+      '<div class="mo-item-body">'+
+        '<div class="mo-edit-row">'+
+          '<div class="fg"><label>Nombre</label><input type="text" value="'+t.nombre.replace(/"/g,'&quot;')+'" id="mo-nom-'+t.id+'"></div>'+
+          '<div class="fg"><label>Categoría</label><input type="text" value="'+t.cat+'" id="mo-cat-'+t.id+'"></div>'+
+        '</div>'+
+        '<div class="mo-edit-row">'+
+          '<div class="fg"><label>Nuevo precio ($)</label><input type="number" value="'+t.precio+'" id="mo-pre-'+t.id+'"></div>'+
+          '<div class="fg"><label>Unidad</label><input type="text" value="'+t.unidad+'" id="mo-uni-'+t.id+'"></div>'+
+          '<button class="mo-btn-update" onclick="actualizarTrabajo('+t.id+')">✓ ACTUALIZAR</button>'+
+        '</div>'+
+        histHTML+
+        '<button class="mo-btn-del-item" onclick="eliminarTrabajo('+t.id+')">🗑 Eliminar este trabajo</button>'+
+      '</div>';
+    el.appendChild(div);
+  });
+}
+
+function toggleMOItem(head){
+  var body=head.nextElementSibling;
+  var arrow=head.querySelector('.mo-item-arrow');
+  body.classList.toggle('open');
+  arrow.classList.toggle('open');
+}
+
+function actualizarTrabajo(id){
+  var t=moTrabajos.find(function(x){return x.id===id;});
+  if(!t)return;
+  var nuevoNom=g('mo-nom-'+id)?g('mo-nom-'+id).value:t.nombre;
+  var nuevoCat=g('mo-cat-'+id)?g('mo-cat-'+id).value:t.cat;
+  var nuevoPre=parseFloat(g('mo-pre-'+id)?g('mo-pre-'+id).value:t.precio)||t.precio;
+  var nuevoUni=g('mo-uni-'+id)?g('mo-uni-'+id).value:t.unidad;
+  t.nombre=nuevoNom;t.cat=nuevoCat;t.unidad=nuevoUni;
+  if(nuevoPre!==t.precio){
+    t.precio=nuevoPre;
+    if(!t.historial)t.historial=[];
+    t.historial.push({fecha:fechaHoy(),precio:nuevoPre});
+  }
+  moGuardar();
+  renderMOFiltros();
+  renderMO();
+}
+
+function eliminarTrabajo(id){
+  if(!confirm('¿Eliminar este trabajo?'))return;
+  moTrabajos=moTrabajos.filter(function(t){return t.id!==id;});
+  moGuardar();
+  renderMOFiltros();
+  renderMO();
+}
+
+function abrirModalNuevo(){
+  g('mo-new-nombre').value='';
+  g('mo-new-precio').value='';
+  g('mo-modal-bg').classList.add('open');
+  setTimeout(function(){g('mo-new-nombre').focus();},100);
+}
+function cerrarModalNuevo(){g('mo-modal-bg').classList.remove('open');}
+
+function agregarTrabajo(){
+  var nom=g('mo-new-nombre').value.trim();
+  var cat=g('mo-new-cat').value;
+  var pre=parseFloat(g('mo-new-precio').value)||0;
+  var uni=g('mo-new-unidad').value;
+  if(!nom){g('mo-new-nombre').focus();return;}
+  var newId=Date.now();
+  moTrabajos.push({id:newId,nombre:nom,cat:cat,unidad:uni,precio:pre,historial:[{fecha:fechaHoy(),precio:pre}]});
+  moGuardar();
+  cerrarModalNuevo();
+  moFiltroActivo='Todos';
+  renderMOFiltros();
+  renderMO();
+}
+
+function abrirMO(){navGo('mo');}
+function cerrarMO(){navGo('pres');}
+
+// cerrar modal tocando el fondo
+g('mo-modal-bg').addEventListener('click',function(e){if(e.target===this)cerrarModalNuevo();});
+
+moCargar();
+
+// ===== MT INIT =====
+var mtMateriales = [{cant:'',nombre:'',marca:''}];
+var mtSavedTimer = null;
+
+// g() ya definida arriba
+function mtVal(id){var e=g(id);return e?(e.type==='checkbox'?e.checked:e.value):'';}
+
+// ===== TABS =====
+function showTab(name, btn){
+  document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
+  var p=g('tab-'+name);if(p)p.classList.add('active');
+  if(btn)btn.classList.add('active');
+}
+
+// ===== CARDS =====
+function toggleMTCard(head){
+  var body=head.nextElementSibling;
+  var arrow=head.querySelector('.mt-card-arrow');
+  body.classList.toggle('open');
+  arrow.classList.toggle('open');
+}
+
+// ===== STORAGE =====
+var MT_FIELDS=['mt-emp','mt-responsable','mt-matricula','mt-tel','mt-ig',
+  'mt-cli','mt-dir','mt-fecha','mt-nro','mt-descripcion','mt-observaciones',
+  'mt-cable-tipo','mt-cable-sec','mt-colores','mt-canalizacion','mt-cajas',
+  'mt-tierra','mt-notas-tec','mt-dif-amp','mt-dif-sens','mt-dif-pol',
+  'mt-dif-marca','mt-termos','mt-curva','mt-poder-corte','mt-tablero-desc',
+  'mt-condiciones','mt-garantia-periodo','mt-garantia',
+  'opt-aea','opt-garantia','opt-materiales','opt-tecnico','opt-tablero'];
+
+function mtGuardar(){
+  MT_FIELDS.forEach(function(id){
+    var e=g(id);if(!e)return;
+    try{localStorage.setItem('mt_'+id,e.type==='checkbox'?e.checked:e.value);}catch(ex){}
+  });
+  try{localStorage.setItem('mt_materiales',JSON.stringify(mtMateriales));}catch(ex){}
+  var b=g('mt-saved-badge');
+  if(b){b.textContent='✓ GUARDADO';b.style.color='rgba(255,255,255,.7)';}
+  clearTimeout(mtSavedTimer);
+  mtSavedTimer=setTimeout(function(){if(b)b.style.color='rgba(255,255,255,.3)';},2000);
+  // toggle aea preview
+  var aeaBox=g('aea-preview-box');
+  if(aeaBox)aeaBox.style.display=mtVal('opt-aea')?'block':'none';
+}
+
+function mtCargar(){
+  MT_FIELDS.forEach(function(id){
+    var e=g(id);if(!e)return;
+    var v=null;try{v=localStorage.getItem('mt_'+id);}catch(ex){}
+    if(v!==null){
+      if(e.type==='checkbox')e.checked=(v==='true');
+      else e.value=v;
+    }
+  });
+  var savedMat=null;try{savedMat=localStorage.getItem('mt_materiales');}catch(ex){}
+  if(savedMat){try{mtMateriales=JSON.parse(savedMat);}catch(ex){mtMateriales=[{cant:'',nombre:'',marca:''}];}}
+  mtRenderMatEditor();
+  var aeaBox=g('aea-preview-box');
+  if(aeaBox)aeaBox.style.display=mtVal('opt-aea')?'block':'none';
+}
+
+// ===== PLANTILLAS =====
+var PLANTILLAS={
+  vivienda:{
+    desc:'Se realizará la instalación eléctrica completa/ampliación en vivienda unifamiliar, contemplando circuitos de iluminación, tomacorrientes, cocina, lavarropas y sistema de puesta a tierra según normativa vigente.',
+    colores:'Fase: marrón/negro, Neutro: azul claro, Tierra: amarillo/verde',
+    cable:'Unipolar IRAM NM 247-3',sec:'2,5 mm²',canal:'Cañería corrugada embutida',
+    termos:'1x 10A (iluminación), 2x 16A (tomas generales), 1x 20A (cocina), 1x 16A (lavarropas)',
+    obs:'Se respetan los circuitos mínimos requeridos para vivienda según AEA 90364.',
+    cond:'Trabajos de albañilería (reparación de paredes, revoque, pintura) no están incluidos en este presupuesto y corren por cuenta del cliente.\nSe presupuestan materiales conforme lo acordado; cambios de marca o especificación pueden modificar el valor.\nFallas eléctricas preexistentes en la instalación existente no están cubiertas por esta cotización.\nLos precios están sujetos a disponibilidad de materiales al momento de la compra.\nModificaciones no contempladas en este documento serán cotizadas por separado.\nSe realizará prueba de continuidad y aislación al finalizar la obra.',
+    garantia:'La empresa garantiza la correcta ejecución de los trabajos realizados por un período de 12 meses, cubriendo únicamente fallas derivadas de errores en la instalación ejecutada. Quedan excluidas las averías producidas por mal uso, modificaciones no autorizadas o causas de fuerza mayor.'
+  },
+  quincho:{
+    desc:'Instalación eléctrica en quincho/espacio exterior con circuitos para iluminación, tomas resistentes a la intemperie (IP55), equipos de cocción y sistema de protección diferencial.',
+    colores:'Fase: marrón, Neutro: azul, Tierra: amarillo/verde',
+    cable:'Unipolar IRAM NM 247-3',sec:'2,5 mm²',canal:'Caño metálico semipesado',
+    termos:'1x 10A (iluminación exterior), 2x 16A (tomas IP55), 1x 20A (parrilla/cocción)',
+    obs:'Todos los componentes exteriores serán de grado de protección mínimo IP44. Se instalará diferencial de 30mA para máxima protección en ambiente húmedo.',
+    cond:'Trabajos de albañilería no incluidos.\nLa instalación exterior requiere mantenimiento periódico por condiciones de intemperie.\nFallas preexistentes no cubiertas.\nPrecios sujetos a variación de materiales.',
+    garantia:'Garantía de 12 meses sobre la instalación ejecutada. Quedan excluidos daños por humedad extrema, inundaciones o uso indebido de los materiales.'
+  },
+  tablero:{
+    desc:'Reemplazo/instalación de tablero eléctrico seccional con protecciones termomagnéticas, diferencial de alta sensibilidad, barras de neutros y tierra independientes, cableado ordenado e identificado.',
+    colores:'Fase: negro/marrón/gris, Neutro: azul, Tierra: amarillo/verde',
+    cable:'Unipolar IRAM NM 247-3',sec:'4 mm²',canal:'Cañería corrugada embutida',
+    termos:'Según circuitos existentes + nuevos a instalar',
+    obs:'El tablero será instalado en caja de 12-24 módulos DIN con tapa, riel DIN galvanizado y borneras identificadas.',
+    cond:'La instalación existente será verificada antes del reemplazo del tablero.\nFallas previas en circuitos no se incluyen en este trabajo.\nModificaciones adicionales se cotizarán por separado.',
+    garantia:'Garantía de 12 meses sobre componentes y montaje del tablero. Protecciones con garantía del fabricante.'
+  },
+  oficina:{
+    desc:'Instalación eléctrica en espacio de oficina/coworking contemplando circuitos diferenciados para equipos informáticos, iluminación eficiente LED, tomas en piso/escritorio y UPS.',
+    colores:'Fase: marrón, Neutro: azul, Tierra: amarillo/verde',
+    cable:'Unipolar IRAM NM 247-3',sec:'2,5 mm²',canal:'Canaleta plástica adherida',
+    termos:'1x 10A (iluminación), 2x 16A (equipos informáticos), 1x 20A (impresoras/equipos pesados)',
+    obs:'Se recomienda UPS para equipos sensibles. Circuitos informáticos con toma a tierra reforzada.',
+    cond:'Cableado estructurado y datos no incluido.\nMobiliario no se desplaza a menos que sea acordado expresamente.\nAlbañilería y pintura no incluidas.',
+    garantia:'Garantía de 12 meses sobre instalación ejecutada. Equipos informáticos no incluidos en la garantía eléctrica.'
+  },
+  local:{
+    desc:'Instalación eléctrica en local comercial con circuitos diferenciados para iluminación de exhibición, cartelería, equipos de refrigeración, caja/POS y sistema de puesta a tierra.',
+    colores:'Fase: marrón/negro, Neutro: azul, Tierra: amarillo/verde',
+    cable:'Unipolar IRAM NM 247-3',sec:'2,5 mm²',canal:'Bandeja porta cables',
+    termos:'1x 10A (iluminación general), 1x 16A (iluminación exhibición), 2x 16A (equipos), 1x 20A (refrigeración)',
+    obs:'Se contempla iluminación de emergencia según normativa municipal. Circuito independiente para cartelería luminosa.',
+    cond:'Habilitación municipal no incluida.\nTrabajos de decoración y construcción no contemplados.\nFallas en equipos existentes no cubiertas.',
+    garantia:'Garantía de 12 meses. Iluminación con garantía adicional del fabricante.'
+  },
+  iluminacion:{
+    desc:'Instalación y/o reemplazo de sistema de iluminación con tecnología LED, contemplando circuitos diferenciados por zona, dimmers y puntos de luz según plano acordado.',
+    colores:'Fase: marrón, Neutro: azul, Tierra: amarillo/verde',
+    cable:'Unipolar IRAM NM 247-3',sec:'1,5 mm²',canal:'Cañería corrugada embutida',
+    termos:'1x 10A por circuito de iluminación (máx. 10 puntos por circuito)',
+    obs:'Se utilizan luminarias LED de bajo consumo (alta eficiencia ≥ 80 lm/W). Temperatura de color a definir con el cliente.',
+    cond:'Artefactos no incluidos salvo indicación expresa.\nAlbañilería de terminación no incluida.',
+    garantia:'Garantía de 12 meses sobre instalación. Luminarias con garantía del fabricante.'
+  },
+  ac:{
+    desc:'Instalación de circuito eléctrico exclusivo para equipo de aire acondicionado tipo split, contemplando línea directa desde tablero, protección termomagnética individual y toma de tierra.',
+    colores:'Fase: marrón, Neutro: azul, Tierra: amarillo/verde',
+    cable:'Unipolar IRAM NM 247-3',sec:'4 mm²',canal:'Cañería corrugada embutida',
+    termos:'1x 20A o 25A monofásica según consumo del equipo',
+    obs:'El circuito será exclusivo para el equipo de AC. Se recomienda instalar un protector de tensión.',
+    cond:'El equipo de AC no está incluido.\nInstalación frigorífica (cañerías de gas refrigerante) no incluida.\nInstalación civil (soporte, perforaciones en pared) no incluida salvo acuerdo.',
+    garantia:'Garantía de 12 meses sobre el circuito eléctrico instalado.'
+  },
+  obra:{
+    desc:'Instalación eléctrica completa en obra nueva, desde la acometida, tablero general y seccionales, hasta los circuitos terminales de iluminación, tomacorrientes, cocina, baños y exteriores.',
+    colores:'Fase: marrón/negro/gris (trifásico), Neutro: azul, Tierra: amarillo/verde',
+    cable:'Unipolar IRAM NM 247-3',sec:'2,5 mm²',canal:'Cañería corrugada embutida',
+    termos:'Según plano de circuitos a definir en proyecto ejecutivo',
+    obs:'Se trabaja en coordinación con el resto de los gremios (plomería, gas, construcción). Todos los caños se dejan tendidos previo al revoque.',
+    cond:'El trabajo se ejecuta por etapas conforme al avance de obra.\nLos precios podrán ser revisados si la obra sufre modificaciones sustanciales.\nTrabajos de albañilería no incluidos.',
+    garantia:'Garantía de 12 meses a partir de la habilitación eléctrica. Instalaciones embutidas con garantía de 5 años.'
+  }
+};
+
+function aplicarPlantilla(tipo){
+  var p=PLANTILLAS[tipo];if(!p)return;
+  var campos={
+    'mt-descripcion':p.desc,
+    'mt-colores':p.colores,
+    'mt-cable-tipo':p.cable,
+    'mt-cable-sec':p.sec,
+    'mt-canalizacion':p.canal,
+    'mt-termos':p.termos,
+    'mt-observaciones':p.obs,
+    'mt-condiciones':p.cond,
+    'mt-garantia':p.garantia,
+    'mt-garantia-periodo':'12 meses'
+  };
+  Object.keys(campos).forEach(function(id){
+    var e=g(id);if(e)e.value=campos[id];
+  });
+  mtGuardar();
+  showTab('general',document.querySelectorAll('.tab-btn')[1]);
+}
+
+// ===== MATERIALES =====
+function mtRenderMatEditor(){
+  var el=g('mat-editor');el.innerHTML='';
+  mtMateriales.forEach(function(m,i){
+    var d=document.createElement('div');d.className='mat-row';
+    d.innerHTML=
+      '<input type="text" placeholder="Cant." value="'+esc(m.cant)+'" oninput="mtMateriales['+i+'].cant=this.value;mtGuardar()">'+
+      '<input type="text" placeholder="Material..." value="'+esc(m.nombre)+'" oninput="mtMateriales['+i+'].nombre=this.value;mtGuardar()">'+
+      '<input type="text" placeholder="Marca" value="'+esc(m.marca)+'" oninput="mtMateriales['+i+'].marca=this.value;mtGuardar()">'+
+      '<button class="mat-del" onclick="mtDelMaterial('+i+')">✕</button>';
+    el.appendChild(d);
+  });
+}
+function mtAddMaterial(){mtMateriales.push({cant:'',nombre:'',marca:''});mtRenderMatEditor();}
+function mtDelMaterial(i){mtMateriales.splice(i,1);if(mtMateriales.length===0)mtMateriales=[{cant:'',nombre:'',marca:''}];mtRenderMatEditor();mtGuardar();}
+function esc(s){return (s||'').replace(/"/g,'&quot;');}
+
+// ===== GUARDAR MEMORIAS =====
+function guardarMemoria(){
+  var nombre=g('mt-save-name').value.trim()||('Memoria '+new Date().toLocaleDateString('es-AR'));
+  var data={nombre:nombre,fecha:fechaHoyMT()};
+  MT_FIELDS.forEach(function(id){
+    var e=g(id);if(!e)return;
+    data[id]=e.type==='checkbox'?e.checked:e.value;
+  });
+  data.materiales=JSON.stringify(mtMateriales);
+  var lista=[];
+  try{var s=localStorage.getItem('mt_saved_list');if(s)lista=JSON.parse(s);}catch(ex){}
+  var id='mt_saved_'+Date.now();
+  lista.unshift({id:id,nombre:nombre,fecha:fechaHoyMT()});
+  try{localStorage.setItem('mt_saved_list',JSON.stringify(lista));localStorage.setItem(id,JSON.stringify(data));}catch(ex){}
+  g('mt-save-name').value='';
+  mtRenderSavedList();
+}
+function mtRenderSavedList(){
+  var el=g('saved-list');el.innerHTML='';
+  var lista=[];
+  try{var s=localStorage.getItem('mt_saved_list');if(s)lista=JSON.parse(s);}catch(ex){}
+  if(lista.length===0){el.innerHTML='<div class="saved-empty">No hay memorias guardadas aún.</div>';return;}
+  lista.forEach(function(item){
+    var d=document.createElement('div');d.className='saved-list-item';
+    d.innerHTML='<div class="saved-item-info"><div class="saved-item-name">'+item.nombre+'</div><div class="saved-item-date">'+item.fecha+'</div></div>'+
+      '<div class="saved-item-btns"><button class="btn-load" onclick="cargarMemoria(\''+item.id+'\')">CARGAR</button><button class="btn-del-saved" onclick="eliminarMemoria(\''+item.id+'\')">✕</button></div>';
+    el.appendChild(d);
+  });
+}
+function cargarMemoria(id){
+  var data=null;try{var s=localStorage.getItem(id);if(s)data=JSON.parse(s);}catch(ex){}
+  if(!data)return;
+  MT_FIELDS.forEach(function(fid){
+    var e=g(fid);if(!e||data[fid]===undefined)return;
+    if(e.type==='checkbox')e.checked=data[fid];else e.value=data[fid];
+  });
+  if(data.materiales){try{mtMateriales=JSON.parse(data.materiales);}catch(ex){}}
+  mtRenderMatEditor();mtGuardar();
+  var aeaBox=g('aea-preview-box');if(aeaBox)aeaBox.style.display=mtVal('opt-aea')?'block':'none';
+  showTab('general',document.querySelectorAll('.tab-btn')[1]);
+}
+function eliminarMemoria(id){
+  if(!confirm('¿Eliminar esta memoria?'))return;
+  var lista=[];try{var s=localStorage.getItem('mt_saved_list');if(s)lista=JSON.parse(s);}catch(ex){}
+  lista=lista.filter(function(x){return x.id!==id;});
+  try{localStorage.setItem('mt_saved_list',JSON.stringify(lista));localStorage.removeItem(id);}catch(ex){}
+  mtRenderSavedList();
+}
+
+function fechaHoyMT(){
+  var d=new Date();
+  return d.getDate().toString().padStart(2,'0')+'/'+(d.getMonth()+1).toString().padStart(2,'0')+'/'+d.getFullYear();
+}
+
+// ===== CARGAR DATOS DESDE PRESUPUESTO =====
+function mtImportarDesde(){
+  var campos={
+    'mt-cli':  ['pres_f-cli',''],
+    'mt-dir':  ['pres_f-dir',''],
+    'mt-fecha':['pres_f-fecha',''],
+    'mt-nro':  ['pres_f-nro',''],
+    'mt-emp':  ['pres_f-emp',''],
+    'mt-tel':  ['pres_f-tel',''],
+    'mt-ig':   ['pres_f-ig',''],
+  };
+  var importado=false;
+  Object.keys(campos).forEach(function(mtId){
+    var presKey=campos[mtId][0];
+    var saved=null;try{saved=localStorage.getItem(presKey);}catch(ex){}
+    if(saved!==null){
+      var e=g(mtId);
+      var existing=null;try{existing=localStorage.getItem('mt_'+mtId);}catch(ex){}
+      if(!existing||existing===''||existing===campos[mtId][1]){
+        if(e)e.value=saved;
+        importado=true;
+      }
+    }
+  });
+  // trabajos
+  var trabajos=[];try{var w=localStorage.getItem('pres_workItems');if(w)trabajos=JSON.parse(w);}catch(ex){}
+  if(trabajos.length>0){
+    var descEl=g('mt-descripcion');
+    var existing=null;try{existing=localStorage.getItem('mt_mt-descripcion');}catch(ex){}
+    if(!existing){
+      descEl.value='Se procederá a realizar los siguientes trabajos eléctricos:\n\n'+trabajos.map(function(t,i){return '• '+t;}).join('\n');
+      importado=true;
+    }
+  }
+  return importado;
+}
+
+// ===== GENERAR DOCUMENTO =====
+function generarMTPreview_hide_nav_(){
+  var nav=g('main-nav');if(nav)nav.style.display='none';
+}
+function generarMTPreview(imprimir){
+  var logoSrc=null;try{logoSrc=localStorage.getItem('pres_logo');}catch(ex){}
+
+  var logoHTML='';
+  if(logoSrc){
+    logoHTML='<img id="doc-logo-img" src="'+logoSrc+'" style="max-height:50px;max-width:120px;display:block;">';
+  } else {
+    logoHTML='<div class="doc-bolt"></div>';
+  }
+
+  var tareas=mtWorkItems();
+  var tareasHTML=tareas.length>0
+    ? tareas.map(function(t,i){return '<div class="doc-task-item"><span class="doc-task-num">0'+(i+1)+'</span><span class="doc-task-txt">'+t+'</span></div>';}).join('')
+    : '<div class="doc-task-item"><span class="doc-task-txt" style="color:#888">Sin tareas cargadas</span></div>';
+
+  var techHTML='';
+  if(mtVal('opt-tecnico')){
+    techHTML='<div class="doc-sec">'+
+      '<div class="doc-sec-head"><div class="doc-sec-num">4</div><div class="doc-sec-title">DETALLE TÉCNICO DE LA INSTALACIÓN</div><div class="doc-sec-line"></div></div>'+
+      '<div class="doc-tech-grid">'+
+        techItem('Tipo de cable',mtVal('mt-cable-tipo'))+
+        techItem('Sección',mtVal('mt-cable-sec'))+
+        techItem('Canalización',mtVal('mt-canalizacion'))+
+        techItem('Tipo de cajas',mtVal('mt-cajas'))+
+      '</div>'+
+      (mtVal('mt-colores')?'<div style="margin-top:10px;"><div class="doc-tech-lbl" style="font-size:10px;letter-spacing:2px;color:#888;text-transform:uppercase;font-weight:700;margin-bottom:6px;">Colores normalizados</div><div style="background:#f5f5f5;border-radius:8px;padding:10px 12px;font-size:13px;font-weight:600;color:#1a1a2e;">'+mtVal('mt-colores')+'</div></div>':'')+
+      (mtVal('mt-tierra')?'<div style="margin-top:10px;"><div class="doc-tech-lbl" style="font-size:10px;letter-spacing:2px;color:#888;text-transform:uppercase;font-weight:700;margin-bottom:6px;">Puesta a tierra</div><div style="background:#f5f5f5;border-radius:8px;padding:10px 12px;font-size:13px;color:#333;line-height:1.6;">'+mtVal('mt-tierra')+'</div></div>':'')+
+      (mtVal('mt-notas-tec')?'<div style="margin-top:10px;"><div class="doc-tech-lbl" style="font-size:10px;letter-spacing:2px;color:#888;text-transform:uppercase;font-weight:700;margin-bottom:6px;">Notas técnicas</div><div style="background:#f5f5f5;border-radius:8px;padding:10px 12px;font-size:13px;color:#333;line-height:1.6;">'+mtVal('mt-notas-tec')+'</div></div>':'')+
+    '</div>';
+  }
+
+  var tableroHTML='';
+  if(mtVal('opt-tablero')){
+    tableroHTML='<div class="doc-sec">'+
+      '<div class="doc-sec-head"><div class="doc-sec-num">5</div><div class="doc-sec-title">TABLEROS Y PROTECCIONES</div><div class="doc-sec-line"></div></div>'+
+      '<div class="doc-tablero-grid">'+
+        tableroItem('Diferencial',mtVal('mt-dif-amp'),'amperios')+
+        tableroItem('Sensibilidad',mtVal('mt-dif-sens'),'')+
+        tableroItem('Polos',mtVal('mt-dif-pol'),'')+
+        tableroItem('Marca',mtVal('mt-dif-marca'),'')+
+        tableroItem('Curva',mtVal('mt-curva'),'')+
+        tableroItem('Poder corte',mtVal('mt-poder-corte'),'')+
+      '</div>'+
+      (mtVal('mt-termos')?'<div style="margin-top:12px;"><div class="doc-tech-lbl" style="font-size:10px;letter-spacing:2px;color:#888;text-transform:uppercase;font-weight:700;margin-bottom:6px;">Termomagnéticas instaladas</div><div style="background:#f5f5f5;border-radius:8px;padding:10px 12px;font-size:13px;color:#333;line-height:1.8;">'+mtVal('mt-termos').split(',').join('<br>')+'</div></div>':'')+
+      (mtVal('mt-tablero-desc')?'<div style="margin-top:10px;"><div class="doc-tech-lbl" style="font-size:10px;letter-spacing:2px;color:#888;text-transform:uppercase;font-weight:700;margin-bottom:6px;">Descripción del tablero</div><div style="background:#f5f5f5;border-radius:8px;padding:10px 12px;font-size:13px;color:#333;line-height:1.6;">'+mtVal('mt-tablero-desc')+'</div></div>':'')+
+    '</div>';
+  }
+
+  var matHTML='';
+  if(mtVal('opt-materiales')){
+    var matRows=mtMateriales.filter(function(m){return m.nombre.trim();})
+      .map(function(m){return '<tr><td class="doc-mat-qty">'+m.cant+'</td><td>'+m.nombre+'</td><td>'+m.marca+'</td></tr>';}).join('');
+    if(matRows){
+      matHTML='<div class="doc-sec">'+
+        '<div class="doc-sec-head"><div class="doc-sec-num">6</div><div class="doc-sec-title">MATERIALES UTILIZADOS</div><div class="doc-sec-line"></div></div>'+
+        '<table class="doc-mat-table"><thead><tr><th>Cant.</th><th>Material / Descripción</th><th>Marca</th></tr></thead><tbody>'+matRows+'</tbody></table>'+
+      '</div>';
+    }
+  }
+
+  var condHTML='';
+  var conds=mtVal('mt-condiciones').split('\n').filter(function(c){return c.trim();});
+  if(conds.length>0){
+    condHTML='<div class="doc-sec">'+
+      '<div class="doc-sec-head"><div class="doc-sec-num">7</div><div class="doc-sec-title">CONDICIONES DEL TRABAJO</div><div class="doc-sec-line"></div></div>'+
+      conds.map(function(c){return '<div class="doc-cond-item"><div class="doc-cond-dot"></div><div class="doc-cond-txt">'+c+'</div></div>';}).join('')+
+    '</div>';
+  }
+
+  var garHTML='';
+  if(mtVal('opt-garantia')&&mtVal('mt-garantia')){
+    garHTML='<div class="doc-sec">'+
+      '<div class="doc-sec-head"><div class="doc-sec-num">8</div><div class="doc-sec-title">GARANTÍA</div><div class="doc-sec-line"></div></div>'+
+      (mtVal('mt-garantia-periodo')?'<div style="display:inline-block;background:#1a1a2e;color:#FFD700;font-family:\'Bebas Neue\',sans-serif;font-size:16px;letter-spacing:3px;border-radius:6px;padding:5px 14px;margin-bottom:12px;">PERÍODO: '+mtVal('mt-garantia-periodo').toUpperCase()+'</div>':'')+
+      '<div class="doc-garantia-box"><p>'+mtVal('mt-garantia')+'</p></div>'+
+    '</div>';
+  }
+
+  var aeaHTML='';
+  if(mtVal('opt-aea')){
+    aeaHTML='<div style="padding:0 22px 16px;">'+
+      '<div class="doc-aea-box"><div class="doc-aea-title">⚖ Normativa AEA 90364</div>'+
+      '<p>La instalación será realizada respetando la reglamentación vigente de la Asociación Electrotécnica Argentina (AEA 90364) para instalaciones eléctricas de baja tensión en edificios.</p></div></div>';
+  }
+
+  var docHTML=
+    '<div class="doc-header">'+
+      '<div class="doc-header-left">'+
+        '<div class="doc-logo-area">'+logoHTML+'</div>'+
+        '<div class="doc-empresa-name">'+xt(mtVal('mt-emp'))+'</div>'+
+        '<div class="doc-empresa-rubro">Instalaciones Eléctricas</div>'+
+        '<div class="doc-empresa-info">'+
+          (mtVal('mt-responsable')?'👤 '+xt(mtVal('mt-responsable'))+'<br>':'')+
+          (mtVal('mt-matricula')?'🪪 '+xt(mtVal('mt-matricula'))+'<br>':'')+
+          (mtVal('mt-tel')?'📞 '+xt(mtVal('mt-tel')):'')+(mtVal('mt-ig')?'&nbsp;&nbsp;📷 @'+xt(mtVal('mt-ig')):'')+
+        '</div>'+
+      '</div>'+
+      '<div class="doc-header-right">'+
+        '<div class="doc-tipo">Documento Técnico</div>'+
+        '<div class="doc-titulo">MEMORIA<br>TÉCNICA</div>'+
+        '<div class="doc-meta">FECHA<b>'+xt(mtVal('mt-fecha'))+'</b><br>N° PRES.<b>'+xt(mtVal('mt-nro'))+'</b></div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="doc-stripe"></div>'+
+    '<div class="doc-sec">'+
+      '<div class="doc-sec-head"><div class="doc-sec-num">1</div><div class="doc-sec-title">DATOS DEL CLIENTE</div><div class="doc-sec-line"></div></div>'+
+      '<div class="doc-client-grid">'+
+        '<div class="doc-field"><div class="doc-field-lbl">Cliente</div><div class="doc-field-val">'+xt(mtVal('mt-cli'))+'</div></div>'+
+        '<div class="doc-field"><div class="doc-field-lbl">Dirección de la obra</div><div class="doc-field-val">'+xt(mtVal('mt-dir')).replace(/\n/g,'<br>')+'</div></div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="doc-sec">'+
+      '<div class="doc-sec-head"><div class="doc-sec-num">2</div><div class="doc-sec-title">DESCRIPCIÓN GENERAL DEL TRABAJO</div><div class="doc-sec-line"></div></div>'+
+      '<div class="doc-desc-box"><p>'+xt(mtVal('mt-descripcion')).replace(/\n/g,'<br>')+'</p></div>'+
+      (mtVal('mt-observaciones')?'<div style="margin-top:10px;background:#f0f4ff;border-radius:8px;padding:12px 14px;border-left:3px solid #1a6fcc;"><div style="font-size:9px;letter-spacing:2px;color:#1a6fcc;font-weight:700;text-transform:uppercase;margin-bottom:5px;">Observaciones</div><p style="font-size:13px;color:#333;line-height:1.6;">'+xt(mtVal('mt-observaciones')).replace(/\n/g,'<br>')+'</p></div>':'')+
+    '</div>'+
+    '<div class="doc-sec">'+
+      '<div class="doc-sec-head"><div class="doc-sec-num">3</div><div class="doc-sec-title">TAREAS A REALIZAR</div><div class="doc-sec-line"></div></div>'+
+      tareasHTML+
+    '</div>'+
+    techHTML+
+    tableroHTML+
+    matHTML+
+    condHTML+
+    garHTML+
+    aeaHTML+
+    '<div class="doc-sec">'+
+      '<div class="doc-sec-head"><div class="doc-sec-num">9</div><div class="doc-sec-title">FIRMAS</div><div class="doc-sec-line"></div></div>'+
+      '<div class="doc-firmas">'+
+        '<div class="doc-firma-box"><div class="doc-firma-line"></div><div class="doc-firma-name">'+xt(mtVal('mt-emp'))+'</div><div class="doc-firma-sub">'+xt(mtVal('mt-responsable')||'Responsable técnico')+'</div></div>'+
+        '<div class="doc-firma-box"><div class="doc-firma-line"></div><div class="doc-firma-name">'+xt(mtVal('mt-cli'))+'</div><div class="doc-firma-sub">Cliente — Aclaración y DNI</div></div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="doc-footer">'+
+      '<div class="doc-footer-brand">'+xt(mtVal('mt-emp'))+'</div>'+
+      '<div class="doc-footer-info">'+xt(mtVal('mt-tel'))+(mtVal('mt-ig')?'&nbsp;&nbsp;@'+xt(mtVal('mt-ig')):'')+'<br>Documento generado el '+fechaHoyMT()+'</div>'+
+    '</div>';
+
+  g('doc-mt').innerHTML=docHTML;
+  g('screen-mt-editor').style.display='none';
+  g('mt-preview').style.display='block';
+  generarMTPreview_hide_nav_();
+  window.scrollTo(0,0);
+  if(imprimir)setTimeout(function(){window.print();},500);
+}
+
+function techItem(label,valor){
+  return '<div class="doc-tech-item"><div class="doc-tech-lbl">'+label+'</div><div class="doc-tech-val">'+(valor||'—')+'</div></div>';
+}
+function tableroItem(label,valor,unit){
+  return '<div class="doc-tablero-item"><div class="doc-tablero-lbl">'+label+'</div><div class="doc-tablero-val">'+(valor||'—')+'</div><div class="doc-tablero-unit">'+unit+'</div></div>';
+}
+function xt(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function mtWorkItems(){
+  var items=[];
+  try{var w=localStorage.getItem('pres_workItems');if(w)items=JSON.parse(w);}catch(ex){}
+  return items;
+}
+
+function volverMTEditor(){
+  var nav=g('main-nav');if(nav)nav.style.display='flex';
+  navSetActive('mt');
+  g('mt-preview').style.display='none';
+  g('screen-mt-editor').style.display='block';
+  window.scrollTo(0,0);
+}
+
+// ===== INIT =====
+mtCargar();
+var importado=mtImportarDesde();
+mtRenderMatEditor();
+mtRenderSavedList();
+if(importado)mtGuardar();
+
+function abrirMT(){navGo('mt');}
+function cerrarMT(){navGo('pres');}
+
+
+// INIT
+cargarTodo();
+mostrarGuardado();
+mtCargar();
+var importado=mtImportarDesde();
+mtRenderMatEditor();
+mtRenderSavedList();
+if(importado)mtGuardar();
+
+// ═══════════════════════════════════════════
+// GARANTÍAS
+// ═══════════════════════════════════════════
+var garItems = [];
+
+function garGuardar(){
+  try{localStorage.setItem('gar_items', JSON.stringify(garItems));}catch(e){}
+}
+function garCargar(){
+  var s=null;try{s=localStorage.getItem('gar_items');}catch(e){}
+  if(s){try{garItems=JSON.parse(s);}catch(e){garItems=[];}}
+}
+function garFecha(){
+  var d=new Date();
+  return d.getDate().toString().padStart(2,'0')+'/'+(d.getMonth()+1).toString().padStart(2,'0')+'/'+d.getFullYear();
+}
+function garEstado(hasta){
+  if(!hasta)return{txt:'Sin fecha',cls:'gar-est-proxima'};
+  var parts=hasta.split('/');
+  if(parts.length<3)return{txt:'Sin fecha',cls:'gar-est-proxima'};
+  var fin=new Date(parseInt(parts[2]),parseInt(parts[1])-1,parseInt(parts[0]));
+  var hoy=new Date(); hoy.setHours(0,0,0,0);
+  var diff=Math.round((fin-hoy)/(1000*60*60*24));
+  if(diff<0)return{txt:'Vencida',cls:'gar-est-vencida'};
+  if(diff<=30)return{txt:'Vence en '+diff+'d',cls:'gar-est-proxima'};
+  return{txt:'Vigente',cls:'gar-est-vigente'};
+}
+function garNueva(){
+  var id='gar_'+Date.now();
+  // tomar datos del presupuesto activo
+  var cli='';try{cli=localStorage.getItem('pres_f-cli')||'';}catch(e){}
+  var dir='';try{dir=localStorage.getItem('pres_f-dir')||'';}catch(e){}
+  var nro='';try{nro=localStorage.getItem('pres_f-nro')||'';}catch(e){}
+  garItems.unshift({
+    id:id,
+    titulo:cli||'Nueva garantía',
+    cliente:cli,
+    direccion:dir,
+    nro:nro,
+    emision:garFecha(),
+    vencimiento:'',
+    periodo:'12 meses',
+    texto:'La empresa garantiza la correcta ejecución de los trabajos realizados por el período indicado, cubriendo únicamente fallas derivadas de errores en la instalación ejecutada. Quedan excluidas las averías producidas por mal uso, modificaciones no autorizadas o causas de fuerza mayor.',
+    notas:''
+  });
+  garGuardar();
+  renderGar();
+  // abrir el primer ítem
+  setTimeout(function(){
+    var heads=document.querySelectorAll('.gar-item-head');
+    if(heads[0])heads[0].click();
+  },100);
+}
+function garToggle(head){
+  var body=head.nextElementSibling;
+  var arrow=head.querySelector('.gar-item-arrow');
+  body.classList.toggle('open');
+  arrow.classList.toggle('open');
+}
+function garActualizar(id){
+  var item=garItems.find(function(x){return x.id===id;});
+  if(!item)return;
+  item.titulo=g('gar-titulo-'+id)?g('gar-titulo-'+id).value:item.titulo;
+  item.cliente=g('gar-cli-'+id)?g('gar-cli-'+id).value:item.cliente;
+  item.direccion=g('gar-dir-'+id)?g('gar-dir-'+id).value:item.direccion;
+  item.nro=g('gar-nro-'+id)?g('gar-nro-'+id).value:item.nro;
+  item.emision=g('gar-em-'+id)?g('gar-em-'+id).value:item.emision;
+  item.vencimiento=g('gar-ven-'+id)?g('gar-ven-'+id).value:item.vencimiento;
+  item.periodo=g('gar-per-'+id)?g('gar-per-'+id).value:item.periodo;
+  item.texto=g('gar-txt-'+id)?g('gar-txt-'+id).value:item.texto;
+  item.notas=g('gar-not-'+id)?g('gar-not-'+id).value:item.notas;
+  garGuardar();
+  renderGar();
+}
+function garEliminar(id){
+  if(!confirm('¿Eliminar esta garantía?'))return;
+  garItems=garItems.filter(function(x){return x.id!==id;});
+  garGuardar();
+  renderGar();
+}
+function renderGar(){
+  var el=g('gar-list'); el.innerHTML='';
+  var emp=g('gar-empty');
+  if(garItems.length===0){if(emp)emp.style.display='block';return;}
+  if(emp)emp.style.display='none';
+  garItems.forEach(function(item){
+    var est=garEstado(item.vencimiento);
+    var div=document.createElement('div'); div.className='gar-item';
+    div.innerHTML=
+      '<div class="gar-item-head" onclick="garToggle(this)">'+
+        '<div class="gar-item-left">'+
+          '<div class="gar-item-titulo">'+esc2(item.titulo)+'</div>'+
+          '<div class="gar-item-meta">'+
+            (item.nro?'<span>N° '+esc2(item.nro)+'</span>':'')+
+            (item.emision?'<span>Emitida: '+esc2(item.emision)+'</span>':'')+
+            (item.vencimiento?'<span>Vence: '+esc2(item.vencimiento)+'</span>':'')+
+          '</div>'+
+        '</div>'+
+        '<span class="gar-item-estado '+est.cls+'">'+est.txt+'</span>'+
+        '<span class="gar-item-arrow">▼</span>'+
+      '</div>'+
+      '<div class="gar-item-body">'+
+        '<div class="fg"><label>Título / referencia</label><input id="gar-titulo-'+item.id+'" value="'+esc2(item.titulo)+'"></div>'+
+        '<div class="fg-row">'+
+          '<div class="fg"><label>Cliente</label><input id="gar-cli-'+item.id+'" value="'+esc2(item.cliente)+'"></div>'+
+          '<div class="fg"><label>N° Presupuesto</label><input id="gar-nro-'+item.id+'" value="'+esc2(item.nro)+'"></div>'+
+        '</div>'+
+        '<div class="fg"><label>Dirección</label><input id="gar-dir-'+item.id+'" value="'+esc2(item.direccion)+'"></div>'+
+        '<div class="fg-row">'+
+          '<div class="fg"><label>Fecha emisión</label><input id="gar-em-'+item.id+'" value="'+esc2(item.emision)+'" placeholder="DD/MM/AAAA"></div>'+
+          '<div class="fg"><label>Fecha vencimiento</label><input id="gar-ven-'+item.id+'" value="'+esc2(item.vencimiento)+'" placeholder="DD/MM/AAAA"></div>'+
+        '</div>'+
+        '<div class="fg"><label>Período</label><input id="gar-per-'+item.id+'" value="'+esc2(item.periodo)+'" placeholder="Ej: 12 meses"></div>'+
+        '<div class="fg"><label>Texto de garantía</label><textarea id="gar-txt-'+item.id+'" rows="5">'+esc2(item.texto)+'</textarea></div>'+
+        '<div class="fg"><label>Notas internas</label><textarea id="gar-not-'+item.id+'" rows="2">'+esc2(item.notas)+'</textarea></div>'+
+        '<div class="gar-doc-preview">'+
+          '<div class="gar-doc-title">Vista del documento</div>'+
+          '<div class="gar-doc-body">'+esc2(item.texto)+'</div>'+
+        '</div>'+
+        '<button class="gar-btn-guardar" onclick="garActualizar(''+item.id+'')">✓ GUARDAR CAMBIOS</button>'+
+        '<button class="gar-btn-del" onclick="garEliminar(''+item.id+'')">🗑 Eliminar garantía</button>'+
+      '</div>';
+    el.appendChild(div);
+  });
+}
+function abrirGar(){navGo('gar');}
+function cerrarGar(){navGo('pres');}
+
+// ═══════════════════════════════════════════
+// TRABAJOS REALIZADOS
+// ═══════════════════════════════════════════
+var trItems = [];
+var trFiltro = 'Todos';
+
+function trGuardar(){
+  try{localStorage.setItem('tr_items', JSON.stringify(trItems));}catch(e){}
+}
+function trCargar(){
+  var s=null;try{s=localStorage.getItem('tr_items');}catch(e){}
+  if(s){try{trItems=JSON.parse(s);}catch(e){trItems=[];}}
+}
+function trFecha(){
+  var d=new Date();
+  return d.getDate().toString().padStart(2,'0')+'/'+(d.getMonth()+1).toString().padStart(2,'0')+'/'+d.getFullYear();
+}
+function trNuevo(){
+  var id='tr_'+Date.now();
+  var cli='';try{cli=localStorage.getItem('pres_f-cli')||'';}catch(e){}
+  var dir='';try{dir=localStorage.getItem('pres_f-dir')||'';}catch(e){}
+  var nro='';try{nro=localStorage.getItem('pres_f-nro')||'';}catch(e){}
+  var mo=0;try{mo=parseFloat(localStorage.getItem('pres_f-mo'))||0;}catch(e){}
+  var mat=0;try{mat=parseFloat(localStorage.getItem('pres_f-mat'))||0;}catch(e){}
+  trItems.unshift({
+    id:id,
+    cliente:cli||'Nuevo trabajo',
+    direccion:dir,
+    nro:nro,
+    fecha:trFecha(),
+    estado:'Pendiente',
+    total:mo+mat,
+    mo:mo,
+    materiales:mat,
+    abonado:0,
+    notas:''
+  });
+  trGuardar();
+  renderTR();
+  setTimeout(function(){
+    var heads=document.querySelectorAll('.tr-item-head');
+    if(heads[0])heads[0].click();
+  },100);
+}
+function trToggle(head){
+  var body=head.nextElementSibling;
+  var arrow=head.querySelector('.tr-item-arrow');
+  body.classList.toggle('open');
+  arrow.classList.toggle('open');
+}
+function trActualizar(id){
+  var item=trItems.find(function(x){return x.id===id;});
+  if(!item)return;
+  item.cliente=g('tr-cli-'+id)?g('tr-cli-'+id).value:item.cliente;
+  item.direccion=g('tr-dir-'+id)?g('tr-dir-'+id).value:item.direccion;
+  item.nro=g('tr-nro-'+id)?g('tr-nro-'+id).value:item.nro;
+  item.fecha=g('tr-fec-'+id)?g('tr-fec-'+id).value:item.fecha;
+  item.estado=g('tr-est-'+id)?g('tr-est-'+id).value:item.estado;
+  item.mo=parseFloat(g('tr-mo-'+id)?g('tr-mo-'+id).value:0)||0;
+  item.materiales=parseFloat(g('tr-mat-'+id)?g('tr-mat-'+id).value:0)||0;
+  item.total=item.mo+item.materiales;
+  item.abonado=parseFloat(g('tr-abo-'+id)?g('tr-abo-'+id).value:0)||0;
+  item.notas=g('tr-not-'+id)?g('tr-not-'+id).value:item.notas;
+  trGuardar();
+  renderTR();
+}
+function trEliminar(id){
+  if(!confirm('¿Eliminar este trabajo?'))return;
+  trItems=trItems.filter(function(x){return x.id!==id;});
+  trGuardar();
+  renderTR();
+}
+function trEstCls(est){
+  var map={'Cobrado':'tr-est-cobrado','Pago parcial':'tr-est-parcial','Pendiente':'tr-est-pendiente','En proceso':'tr-est-proceso'};
+  return map[est]||'tr-est-pendiente';
+}
+function fmtPeso(n){
+  return '$'+(Math.round(n)||0).toLocaleString('es-AR');
+}
+function renderTRResumen(){
+  var items=trItems;
+  var totalPres=0,cobrado=0,adeudado=0;
+  items.forEach(function(t){
+    totalPres+=t.total||0;
+    cobrado+=t.abonado||0;
+    adeudado+=(t.total||0)-(t.abonado||0);
+  });
+  var el=g('tr-resumen');
+  if(!el)return;
+  el.innerHTML=
+    '<div class="tr-res-item"><div class="tr-res-lbl">Presupuestado</div><div class="tr-res-val">'+fmtPeso(totalPres)+'</div></div>'+
+    '<div class="tr-res-item"><div class="tr-res-lbl">Cobrado</div><div class="tr-res-val verde">'+fmtPeso(cobrado)+'</div></div>'+
+    '<div class="tr-res-item"><div class="tr-res-lbl">Adeudado</div><div class="tr-res-val rojo">'+fmtPeso(adeudado)+'</div></div>'+
+    '<div class="tr-res-item"><div class="tr-res-lbl">Trabajos</div><div class="tr-res-val">'+items.length+'</div></div>';
+}
+function renderTRFiltros(){
+  var el=g('tr-filters'); if(!el)return;
+  var opts=['Todos','Pendiente','En proceso','Pago parcial','Cobrado'];
+  el.innerHTML='';
+  opts.forEach(function(o){
+    var b=document.createElement('button');
+    b.className='tr-filter-btn'+(trFiltro===o?' active':'');
+    b.textContent=o;
+    b.onclick=function(){trFiltro=o;renderTRFiltros();renderTRLista();};
+    el.appendChild(b);
+  });
+}
+function renderTRLista(){
+  var el=g('tr-list'); if(!el)return;
+  var lista=trFiltro==='Todos'?trItems:trItems.filter(function(t){return t.estado===trFiltro;});
+  el.innerHTML='';
+  var emp=g('tr-empty');
+  if(lista.length===0){if(emp)emp.style.display='block';return;}
+  if(emp)emp.style.display='none';
+  lista.forEach(function(item){
+    var adeudado=(item.total||0)-(item.abonado||0);
+    var div=document.createElement('div'); div.className='tr-item';
+    div.innerHTML=
+      '<div class="tr-item-head" onclick="trToggle(this)">'+
+        '<div class="tr-item-left">'+
+          '<div class="tr-item-cli">'+esc2(item.cliente)+'</div>'+
+          (item.direccion?'<div class="tr-item-dir">'+esc2(item.direccion)+'</div>':'')+
+          '<div class="tr-item-fecha">'+esc2(item.fecha)+(item.nro?' — N°'+esc2(item.nro):'')+'</div>'+
+        '</div>'+
+        '<div class="tr-item-right">'+
+          '<div class="tr-item-total">'+fmtPeso(item.total)+'</div>'+
+          '<span class="tr-item-estado '+trEstCls(item.estado)+'">'+esc2(item.estado)+'</span>'+
+        '</div>'+
+        '<span class="tr-item-arrow">▼</span>'+
+      '</div>'+
+      '<div class="tr-item-body">'+
+        '<div class="fg"><label>Cliente</label><input id="tr-cli-'+item.id+'" value="'+esc2(item.cliente)+'"></div>'+
+        '<div class="fg-row">'+
+          '<div class="fg"><label>Fecha</label><input id="tr-fec-'+item.id+'" value="'+esc2(item.fecha)+'" placeholder="DD/MM/AAAA"></div>'+
+          '<div class="fg"><label>N° Presupuesto</label><input id="tr-nro-'+item.id+'" value="'+esc2(item.nro)+'"></div>'+
+        '</div>'+
+        '<div class="fg"><label>Dirección</label><input id="tr-dir-'+item.id+'" value="'+esc2(item.direccion)+'"></div>'+
+        '<div class="fg"><label>Estado</label>'+
+          '<select id="tr-est-'+item.id+'">'+
+            ['Pendiente','En proceso','Pago parcial','Cobrado'].map(function(o){
+              return '<option value="'+o+'"'+(item.estado===o?' selected':'')+'>'+o+'</option>';
+            }).join('')+
+          '</select>'+
+        '</div>'+
+        '<div class="tr-desglose">'+
+          '<div class="tr-desglose-row"><span>Mano de obra</span><span>'+fmtPeso(item.mo)+'</span></div>'+
+          '<div class="tr-desglose-row"><span>Materiales</span><span>'+fmtPeso(item.materiales)+'</span></div>'+
+          '<div class="tr-desglose-row"><span>TOTAL</span><span>'+fmtPeso(item.total)+'</span></div>'+
+        '</div>'+
+        '<div class="fg-row">'+
+          '<div class="fg"><label>Mano de obra ($)</label><input type="number" id="tr-mo-'+item.id+'" value="'+Math.round(item.mo||0)+'"></div>'+
+          '<div class="fg"><label>Materiales ($)</label><input type="number" id="tr-mat-'+item.id+'" value="'+Math.round(item.materiales||0)+'"></div>'+
+        '</div>'+
+        '<div class="fg"><label>Ya abonado ($)</label><input type="number" id="tr-abo-'+item.id+'" value="'+Math.round(item.abonado||0)+'"></div>'+
+        '<div class="fg" style="background:#f7f7f7;border-radius:10px;padding:10px 13px;">'+
+          '<div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Saldo adeudado</div>'+
+          '<div style="font-size:22px;font-weight:800;color:'+(adeudado>0?'#c00':'#2a7a2a')+'">'+fmtPeso(adeudado)+'</div>'+
+        '</div>'+
+        '<div class="fg"><label>Notas</label><textarea id="tr-not-'+item.id+'" rows="2">'+esc2(item.notas)+'</textarea></div>'+
+        '<button class="tr-btn-guardar" onclick="trActualizar(''+item.id+'')">✓ GUARDAR CAMBIOS</button>'+
+        '<button class="tr-btn-del" onclick="trEliminar(''+item.id+'')">🗑 Eliminar registro</button>'+
+      '</div>';
+    el.appendChild(div);
+  });
+}
+function renderTR(){
+  renderTRResumen();
+  renderTRFiltros();
+  renderTRLista();
+}
+function abrirTR(){navGo('tr');}
+function cerrarTR(){navGo('pres');}
+
+function esc2(s){return (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+
+// ===== NAVEGACIÓN PRINCIPAL =====
+function navSetActive(name){
+  ['pres','mo','mt','gar','tr'].forEach(function(n){
+    var el=g('nav-'+n);
+    if(el)el.classList.toggle('active', n===name);
+  });
+}
+function navGo(name){
+  // ocultar todo
+  g('screen-editor').style.display='none';
+  g('screen-mo').style.display='none';
+  g('screen-mt').style.display='none';
+  g('screen-gar').style.display='none';
+  g('screen-tr').style.display='none';
+  g('screen-preview').style.display='none';
+  g('mt-preview').style.display='none';
+  var nav=g('main-nav');if(nav)nav.style.display='flex';
+  navSetActive(name);
+  window.scrollTo(0,0);
+  if(name==='pres'){g('screen-editor').style.display='block';}
+  else if(name==='mo'){g('screen-mo').style.display='block';renderMOFiltros();renderMO();}
+  else if(name==='mt'){g('screen-mt').style.display='block';mtRenderSavedList();}
+  else if(name==='gar'){g('screen-gar').style.display='block';renderGar();}
+  else if(name==='tr'){g('screen-tr').style.display='block';renderTR();}
+}
+
+// init
+garCargar();
+trCargar();
+
+</script>
+</body>
+</html>
